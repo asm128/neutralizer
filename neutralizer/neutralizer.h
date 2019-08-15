@@ -101,6 +101,18 @@ namespace ntl
 		return ::ntl::htmlVoidTag("link", {src.begin(), src.size()}, output);
 	}
 
+	static inline ::gpk::error_t				htmlHRefLink		(const ::gpk::view_const_string	& content
+		, const ::gpk::view_const_string	& url
+		, const ::gpk::view_const_string	& attributes
+		, ::gpk::array_pod<char_t>			& output
+		) {
+		::gpk::array_pod<char_t>						src					= attributes;
+		src.append(::gpk::view_const_string{" href=\""});
+		src.append(url);
+		src.push_back('"');
+		return ::ntl::htmlTag("a", content, {src.begin(), src.size()}, output);
+	}
+
 	::gpk::error_t								httpPath			(::gpk::view_const_string folder, ::gpk::view_const_string name, ::gpk::view_const_string extension, ::gpk::array_pod<char_t> & output);
 
 	::gpk::error_t								loadConfig			(::ntl::SHTMLEndpoint & programState, int32_t indexRoot);
