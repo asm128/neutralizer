@@ -4,6 +4,15 @@
 
 #include "gpk_json_expression.h"
 
+::gpk::error_t										ntl::httpPath						(::gpk::view_const_string folder, ::gpk::view_const_string name, ::gpk::view_const_string extension, ::gpk::array_pod<char_t> & output) {
+	output.append(folder);
+	output.push_back('/');
+	output.append(name);
+	output.push_back('.');
+	output.append(extension);
+	return 0;
+}
+
 ::gpk::error_t										ntl::htmlMenuIcon
 	(	const ::gpk::view_const_string	& pathImages
 	,	const ::gpk::view_const_string	& extension
@@ -103,11 +112,7 @@
 		iconId.append(txtIcon);
 		::gpk::base64EncodeFS(iconId, idBase64);
 	}
-	//output.append(::gpk::view_const_string{ "<a style=\"height: 100%;\" href=\"" });
-	//output.append(itemName);
-	//output.push_back('.');
-	//output.append(::gpk::view_const_string{ "exe\" >" });
-	output.append(::gpk::view_const_string{ "<table style=\"width: 100%; height: 100%;text-align:center;\" " });
+	output.append(::gpk::view_const_string{ "\n<table style=\"width: 100%; height: 100%;text-align:center;\" " });
 	output.append(::gpk::view_const_string{" id=\""});
 	output.append(idBase64);
 	output.append(::gpk::view_const_string{"\" onclick=\"reframe('dumMainFrame', '0', '"});
@@ -116,11 +121,12 @@
 	output.append(::gpk::view_const_string{"exe');\" "});
 	idBase64.push_back(0);
 	sprintf_s(events, "onmouseout=\"cellColor('%s', null, 0);\" onmouseover=\"cellColor('%s', '#ec8106', 0);\" ", idBase64.begin(), idBase64.begin());
+
 	output.append(::gpk::view_const_string{events});
 	output.append(::gpk::view_const_string{" >"});
 
-	output.append(::gpk::view_const_string{ "<tr><td>"	});
-	output.append(::gpk::view_const_string{ "<image style=\"\"  src=\""	});
+	output.append(::gpk::view_const_string{ "\n<tr>\n<td>"	});
+	output.append(::gpk::view_const_string{ "\n<image style=\"\"  src=\""	});
 	output.append(pathImages);
 	if(iconLarge)
 		output.append(::gpk::view_const_string{ "/icon_large_"								});
@@ -130,16 +136,16 @@
 	output.push_back('.');
 	output.append(extension);
 	output.append(::gpk::view_const_string{ "\" />"										});
-	output.append(::gpk::view_const_string{"</td></tr>"										});
+	output.append(::gpk::view_const_string{"\n</td></tr>"										});
 
-	output.append(::gpk::view_const_string{ "<tr >"										});
-	output.append(::gpk::view_const_string{ "<td style=\"max-height:1.5em;font-size:1.5em;\" >"			});
-	output.append(::gpk::view_const_string{ "<p style=\"color:black;max-height:1.5em;font-size:1.5em;\" >"			});
+	output.append(::gpk::view_const_string{ "\n<tr >"										});
+	output.append(::gpk::view_const_string{ "\n<td style=\font-size:1.5em;\" >"			});
+	output.append(::gpk::view_const_string{ "\n<p style=\"color:black;font-size:1.5em;\" >"			});
 	output.append(txtIcon);
 	output.append(::gpk::view_const_string{"</p>"										});
-	output.append(::gpk::view_const_string{"</td>"										});
-	output.append(::gpk::view_const_string{ "</tr>"										});
-	output.append(::gpk::view_const_string{ "</table>"									});
+	output.append(::gpk::view_const_string{"\n</td>"										});
+	output.append(::gpk::view_const_string{"\n</tr>"										});
+	output.append(::gpk::view_const_string{"\n</table>"									});
 	//output.append(::gpk::view_const_string{ "</a>"									});
 	return 0;
 }
@@ -151,22 +157,22 @@
 	, ::gpk::array_pod<char_t>							& output
 	, bool												iconsLarge
 	) {
-	output.append(::gpk::view_const_string{ "<table style=\"width:100%;height:100%;\" >"		});	// 181830
-	output.append(::gpk::view_const_string{ "<tr style=\"height:100%; \">"			});
+	output.append(::gpk::view_const_string{ "\n<table style=\"width:100%;height:100%;\" >"		});	// 181830
+	output.append(::gpk::view_const_string{ "\n<tr style=\"height:100%; \">"			});
 	char													iconWidth	[32]		= {};
 	const double											iconWidthPercent		= 100 / menuItems.size();
 	sprintf_s(iconWidth, "%f%%", iconWidthPercent);
 	for(uint32_t iItem = 0; iItem < menuItems.size(); ++iItem) {
 		const ::ntl::SHTMLIcon									currentItem				= menuItems[iItem];
-		output.append(::gpk::view_const_string{"<td style=\"height:100%;width:"});
+		output.append(::gpk::view_const_string{"\n<td style=\"height:100%;width:"});
 		output.append(::gpk::view_const_string{iconWidth});
 		output.append(::gpk::view_const_string{"\" >"});
 
 		::ntl::htmlControlMenuIcon(pathImages, extensionImages, currentItem.Item, currentItem.Text, output, iconsLarge);	// ------ Unknown icon
-		output.append(::gpk::view_const_string{"</td>"});
+		output.append(::gpk::view_const_string{"\n</td>"});
 	}
-	output.append(::gpk::view_const_string{"</tr>"			});
-	output.append(::gpk::view_const_string{"</table>"		});
+	output.append(::gpk::view_const_string{"\n</tr>"			});
+	output.append(::gpk::view_const_string{"\n</table>"		});
 	return 0;
 }
 
@@ -189,6 +195,23 @@
 	gpk_necall(output.push_back('<')	, "%s", "Out of memory?");
 	gpk_necall(output.push_back('/')	, "%s", "Out of memory?");
 	gpk_necall(output.append(tagName)	, "%s", "Out of memory?");
+	gpk_necall(output.push_back('>')	, "%s", "Out of memory?");
+	return 0;
+}
+
+::gpk::error_t									ntl::htmlVoidTag
+	( const ::gpk::view_const_string	& tagName
+	, const ::gpk::view_const_string	& attributes
+	, ::gpk::array_pod<char_t>			& output
+	) {
+	gpk_necall(output.push_back('<')	, "%s", "Out of memory?");
+	gpk_necall(output.append(tagName)	, "%s", "Out of memory?");
+	if(attributes.size()) {
+		gpk_necall(output.push_back(' ')	, "%s", "Out of memory?");
+		gpk_necall(output.append(attributes), "%s", "Out of memory?");
+		gpk_necall(output.push_back(' ')	, "%s", "Out of memory?");
+	}
+	gpk_necall(output.push_back('/')	, "%s", "Out of memory?");
 	gpk_necall(output.push_back('>')	, "%s", "Out of memory?");
 	return 0;
 }

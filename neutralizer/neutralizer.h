@@ -43,6 +43,12 @@ namespace ntl
 		, ::gpk::array_pod<char_t>			& output
 		);
 
+	::gpk::error_t								htmlVoidTag
+		( const ::gpk::view_const_string	& tagName
+		, const ::gpk::view_const_string	& attributes
+		, ::gpk::array_pod<char_t>			& output
+		);
+
 	::gpk::error_t								htmlMenuIcon
 		( const ::gpk::view_const_string	& pathImages
 		, const ::gpk::view_const_string	& extension
@@ -78,9 +84,24 @@ namespace ntl
 		);
 
 
-	static inline ::gpk::error_t				htmlHeaderTitle		(const ::gpk::view_const_string	& content, ::gpk::array_pod<char_t> & output) { return ::ntl::htmlTag("title", content, {}, output); }
-	static inline ::gpk::error_t				htmlHeaderScript	(const ::gpk::view_const_string	& content, ::gpk::array_pod<char_t> & output) { return ::ntl::htmlTag("script", content, {}, output); }
-	static inline ::gpk::error_t				htmlHeaderStyle		(const ::gpk::view_const_string	& content, ::gpk::array_pod<char_t> & output) { return ::ntl::htmlTag("style", content, " type=\"text/css\" ", output); }
+	static inline ::gpk::error_t				htmlHeaderTitle		(const ::gpk::view_const_string	& content	, ::gpk::array_pod<char_t> & output) { return ::ntl::htmlTag("title", content, {}, output); }
+	static inline ::gpk::error_t				htmlHeaderScript	(const ::gpk::view_const_string	& content	, ::gpk::array_pod<char_t> & output) { return ::ntl::htmlTag("script", content, {}, output); }
+	static inline ::gpk::error_t				htmlHeaderStyle		(const ::gpk::view_const_string	& content	, ::gpk::array_pod<char_t> & output) { return ::ntl::htmlTag("style", content, " type=\"text/css\" ", output); }
+	static inline ::gpk::error_t				htmlHeaderScriptFile(const ::gpk::view_const_string	& file		, ::gpk::array_pod<char_t> & output) {
+		::gpk::array_pod<char_t>						src					= ::gpk::view_const_string{"type=\"text/javascript\" src=\""};
+		src.append(file);
+		src.push_back('"');
+		return ::ntl::htmlTag("script", {}, {src.begin(), src.size()}, output);
+	}
+
+	static inline ::gpk::error_t				htmlHeaderStyleLink	(const ::gpk::view_const_string	& file		, ::gpk::array_pod<char_t> & output) {
+		::gpk::array_pod<char_t>						src					= ::gpk::view_const_string{" rel=\"stylesheet\" type=\"text/css\" href=\""};
+		src.append(file);
+		src.push_back('"');
+		return ::ntl::htmlVoidTag("link", {src.begin(), src.size()}, output);
+	}
+
+	::gpk::error_t								httpPath			(::gpk::view_const_string folder, ::gpk::view_const_string name, ::gpk::view_const_string extension, ::gpk::array_pod<char_t> & output);
 
 	::gpk::error_t								loadConfig			(::ntl::SHTMLEndpoint & programState, int32_t indexRoot);
 } // namespace

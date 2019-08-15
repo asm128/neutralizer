@@ -3,7 +3,7 @@
 		{	"http" : 
 			{	"path"			: // Paths have to start with a / and will be relative to (appended at the end of) "root" 
 				{	"root"			: "/obelisco"	// This is the root path of the applicaiton. It's used as basis for 
-				,	"exe"			: "/debug"		// This is the root path of the applicaiton. It's used as basis for 
+				,	"exe"			: "/debug"		// 
 				,	"image"			: "/image"	
 				,	"css"			: "/css"		
 				,	"js"			: "/js"		
