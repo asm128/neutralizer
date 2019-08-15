@@ -49,6 +49,7 @@ namespace ntl
 		, const ::gpk::view_const_string	& itemName
 		, const ::gpk::view_const_string	& txtIcon
 		, ::gpk::array_pod<char_t>			& output
+		, bool								iconsLarge					= true
 		);
 
 	::gpk::error_t								htmlMenuIconsHorizontal
@@ -56,6 +57,24 @@ namespace ntl
 		, const ::gpk::view_const_string					& pathImages
 		, const ::gpk::view_const_string					& extensionImages
 		, ::gpk::array_pod<char_t>							& output
+		, bool								iconsLarge					= true
+		);
+
+	::gpk::error_t								htmlControlMenuIcon
+		( const ::gpk::view_const_string	& pathImages
+		, const ::gpk::view_const_string	& extension
+		, const ::gpk::view_const_string	& itemName
+		, const ::gpk::view_const_string	& txtIcon
+		, ::gpk::array_pod<char_t>			& output
+		, bool								iconsLarge					= true
+		);
+
+	::gpk::error_t								htmlControlMenuIconsHorizontal
+		( const ::gpk::view_array<const ::ntl::SHTMLIcon>	& menuItems
+		, const ::gpk::view_const_string					& pathImages
+		, const ::gpk::view_const_string					& extensionImages
+		, ::gpk::array_pod<char_t>							& output
+		, bool								iconsLarge					= true
 		);
 
 
