@@ -1,6 +1,7 @@
 {	"obelisco" : 
 	{	"front"	: 
-		{	"http" : 
+		{	"title": "- Obelisco - Un Patrimonio Incalculable de la República de la Nación Argentina -"
+		,	"http" : 
 			{	"path"			: // Paths have to start with a / and will be relative to (appended at the end of) "root" 
 				{	"root"			: "/obelisco"	// This is the root path of the applicaiton. It's used as basis for 
 				,	"exe"			: "/debug"		// 
@@ -24,6 +25,40 @@
 			{	"https_address"		: "asm128.com"
 			,	"https_port"		: "443"
 			,	"path"				: "/debug/obelisco/asterisco.exe"
+			}
+		,	"udp" : 
+			{	"udp_lan_address"	: "192.168.0.2"
+			,	"udp_lan_port"		: "9797"
+			}
+		}
+	}
+,	"tuobelisco" : 
+	{	"front"	: 
+		{	"title": "- Tu Obelisco - Un Patrimonio Incalculable de la República de la Nación Argentina -"
+		,	"http" : 
+			{	"path"			: // Paths have to start with a / and will be relative to (appended at the end of) "root" 
+				{	"root"			: "/tuobelisco"	// This is the root path of the applicaiton. It's used as basis for 
+				,	"exe"			: "/module"		// 
+				,	"image"			: "/image"	
+				,	"css"			: "/css"		
+				,	"js"			: "/js"		
+		 		}
+			}
+		,	"extension" : 
+			{	"image"				: "png"
+			,	"program"			: "exe"
+			} 
+		}
+	,	"back"	: 
+		{	"http" : 
+			{	"domain"			: "asm128.com"
+			,	"path"				: "/module/obelisco/asterisco.exe"
+			,	"port"				: "80"
+			}
+		,	"https" : 
+			{	"https_address"		: "asm128.com"
+			,	"https_port"		: "443"
+			,	"path"				: "/module/obelisco/asterisco.exe"
 			}
 		,	"udp" : 
 			{	"udp_lan_address"	: "192.168.0.2"

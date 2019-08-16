@@ -250,7 +250,7 @@
 		path.append(pathPart);
 		programState.Path.Program						= ::gpk::label(path.begin(), (uint32_t)-1);
 	}
-
+	::gpk::jsonExpressionResolve("front.title"				, programState.Config.Reader, indexRoot, programState.Page.Title		);
 	::gpk::jsonExpressionResolve("front.extension.image"	, programState.Config.Reader, indexRoot, programState.Extension.Image	);
 	::gpk::jsonExpressionResolve("front.extension.program"	, programState.Config.Reader, indexRoot, programState.Extension.Program	);
 	return 0;
