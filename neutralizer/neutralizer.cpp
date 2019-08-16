@@ -115,7 +115,9 @@
 	output.append(::gpk::view_const_string{ "\n<table style=\"width: 100%; height: 100%;text-align:center;\" " });
 	output.append(::gpk::view_const_string{" id=\""});
 	output.append(idBase64);
-	output.append(::gpk::view_const_string{"\" onclick=\"reframe('dumMainFrame', '0', '"});
+	output.append(::gpk::view_const_string{"\" onclick=\"reframe('dumMainFrame', '"});
+	output.append(itemName);
+	output.append(::gpk::view_const_string{"', '"});
 	output.append(itemName);
 	output.push_back('.');
 	output.append(::gpk::view_const_string{"exe');\" "});
@@ -140,11 +142,13 @@
 
 	output.append(::gpk::view_const_string{ "\n<tr >"										});
 	output.append(::gpk::view_const_string{ "\n<td style=\font-size:1.5em;\" >"			});
-	output.append(::gpk::view_const_string{ "\n<p style=\"color:black;font-size:1.5em;\" >"			});
+	output.append(::gpk::view_const_string{ "\n<p style=\"color:black;font-size:1.5em;\" id=\""			});
+	output.append(itemName);
+	output.append(::gpk::view_const_string{ "\" >"										});
 	output.append(txtIcon);
 	output.append(::gpk::view_const_string{"</p>"										});
-	output.append(::gpk::view_const_string{"\n</td>"										});
-	output.append(::gpk::view_const_string{"\n</tr>"										});
+	output.append(::gpk::view_const_string{"\n</td>"									});
+	output.append(::gpk::view_const_string{"\n</tr>"									});
 	output.append(::gpk::view_const_string{"\n</table>"									});
 	//output.append(::gpk::view_const_string{ "</a>"									});
 	return 0;
