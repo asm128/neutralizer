@@ -120,7 +120,7 @@
 	output.append(::gpk::view_const_string{"', '"});
 	output.append(itemName);
 	output.push_back('.');
-	output.append(::gpk::view_const_string{"exe');\" "});
+	output.append(::gpk::view_const_string{"exe', document.getElementById('frameLang').value);\" "});
 	idBase64.push_back(0);
 	sprintf_s(events, "onmouseout=\"cellColor('%s', null, 0);\" onmouseover=\"cellColor('%s', '#ec8106', 0);\" ", idBase64.begin(), idBase64.begin());
 
