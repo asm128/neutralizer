@@ -188,6 +188,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="neutralizer.h" />
+    <ClInclude Include="neutralizer_ad_category.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="neutralizer.cpp" />
