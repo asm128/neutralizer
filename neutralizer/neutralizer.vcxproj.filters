@@ -26,6 +26,9 @@
     <ClCompile Include="neutralizer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="neutralizer_ad_category.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="neutralizer.json" />
