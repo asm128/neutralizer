@@ -4,6 +4,34 @@
 
 #include "gpk_json_expression.h"
 
+::gpk::error_t								ntl::pageCatalog					(const ::gpk::view_const_string & contentFileName, const ::gpk::view_const_string & pathStyles, const AD_SHOP_CATEGORY category, const ::gpk::view_const_string & title, const ::gpk::view_const_string & lang, ::gpk::array_pod<char_t> & output) {
+
+	output.append(::gpk::view_const_string{ "\n<html>"});
+	output.append(::gpk::view_const_string{ "\n<head>"});
+	output.append(::gpk::view_const_string{ "\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=iso-8859-1\" />"});
+
+	::gpk::array_pod<char_t>								fileStyle			;
+	::ntl::httpPath(pathStyles, "blankstyle", "css"	, fileStyle);
+	::ntl::htmlHeaderTitle		(title, output);
+	::ntl::htmlHeaderStyleLink	({fileStyle.begin(), fileStyle.size()}, output);
+	output.append(::gpk::view_const_string{"\n</head>"});
+
+	output.append(::gpk::view_const_string{"\n<body style=\"width:100%;height:100%;background-color:#E0E0E0;font-family:Arial;\">"	}); // 202050
+	output.append(::gpk::view_const_string{ "\n<table style=\"width:100%;height:100%;text-align:center;\">"	});
+	output.append(::gpk::view_const_string{ "\n<tr style=\"\" >"});
+	output.append(::gpk::view_const_string{ "\n<td style=\"font-size:16px; font-weight:bold; vertical-align:top;\">"});
+
+	::ntl::htmlBoardGenerate(contentFileName, category, title, lang, output);
+
+	output.append(::gpk::view_const_string{"\n</td>"			});
+	output.append(::gpk::view_const_string{"\n</tr>"			});
+	output.append(::gpk::view_const_string{"\n</table>"			});
+	output.append(::gpk::view_const_string{"\n</body>"			});
+	output.append(::gpk::view_const_string{"\n</html>"			});
+	return 0;
+}
+
+
 ::gpk::error_t								ntl::htmlBoardGenerate				(const ::gpk::view_const_string & contentFileName, const ::ntl::AD_SHOP_CATEGORY category, const ::gpk::view_const_string & title, const ::gpk::view_const_string & lang, ::gpk::array_pod<char_t> & output)	{
 	output.append(::gpk::view_const_string{ "\n<table style=\"width:100%;height:100%;text-align:center;\">"});
 
