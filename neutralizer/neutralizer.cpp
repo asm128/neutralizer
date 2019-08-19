@@ -30,16 +30,12 @@
 		iconId.append(txtIcon);
 		::gpk::base64EncodeFS(iconId, idBase64);
 	}
-	output.append(::gpk::view_const_string{ "<a style=\"height: 100%;\" href=\"" });
-	output.append(itemName);
-	output.push_back('.');
-	output.append(::gpk::view_const_string{ "exe\" >" });
 	output.append(::gpk::view_const_string{ "<table style=\"width: 100%; height: 100%;text-align:center;\" " });
 	output.append(::gpk::view_const_string{" id=\""});
 	output.append(idBase64);
 	output.append(::gpk::view_const_string{"\" "});
 	idBase64.push_back(0);
-	sprintf_s(events, "onclick=\"cellClick('%s');\" onmouseout=\"cellColor('%s', null, 0);\" onmouseover=\"cellColor('%s', '#ec8106', 0);\" ", idBase64.begin(), idBase64.begin(), idBase64.begin());
+	sprintf_s(events, "onmouseout=\"cellColor('%s', null, 0);\" onmouseover=\"cellColor('%s', '#ec8106', 0);\" ", idBase64.begin(), idBase64.begin());
 	output.append(::gpk::view_const_string{events});
 	output.append(::gpk::view_const_string{" >"});
 
@@ -64,7 +60,6 @@
 	output.append(::gpk::view_const_string{"</td>"										});
 	output.append(::gpk::view_const_string{ "</tr>"										});
 	output.append(::gpk::view_const_string{ "</table>"									});
-	output.append(::gpk::view_const_string{ "</a>"									});
 	return 0;
 }
 
@@ -98,8 +93,7 @@
 ::gpk::error_t										ntl::htmlControlMenuIcon
 	(	const ::gpk::view_const_string	& pathImages
 	,	const ::gpk::view_const_string	& extension
-	,	const ::gpk::view_const_string	& itemName
-	,	const ::gpk::view_const_string	& txtIcon
+	,	const ::ntl::SHTMLIcon			& menuItem
 	,	::gpk::array_pod<char_t>		& output
 	, bool								iconLarge
 	) {
@@ -109,16 +103,16 @@
 	::gpk::array_pod<char_t>								idBase64				= {};
 	{ // Generate id for this icon
 		iconId											= ::gpk::view_const_string{ "id_icon_"};
-		iconId.append(txtIcon);
+		iconId.append(menuItem.Text);
 		::gpk::base64EncodeFS(iconId, idBase64);
 	}
 	output.append(::gpk::view_const_string{ "\n<table style=\"width: 100%; height: 100%;text-align:center;\" " });
 	output.append(::gpk::view_const_string{" id=\""});
 	output.append(idBase64);
 	output.append(::gpk::view_const_string{"\" onclick=\"reframe('dumMainFrame', '"});
-	output.append(itemName);
+	output.append(menuItem.Item);
 	output.append(::gpk::view_const_string{"', '"});
-	output.append(itemName);
+	output.append(menuItem.Program);
 	output.push_back('.');
 	output.append(::gpk::view_const_string{"exe', document.getElementById('frameLang').value);\" "});
 	idBase64.push_back(0);
@@ -134,7 +128,7 @@
 		output.append(::gpk::view_const_string{ "/icon_large_"								});
 	else
 		output.append(::gpk::view_const_string{ "/icon_small_"								});
-	output.append(itemName);
+	output.append(menuItem.Item);
 	output.push_back('.');
 	output.append(extension);
 	output.append(::gpk::view_const_string{ "\" />"										});
@@ -143,14 +137,13 @@
 	output.append(::gpk::view_const_string{ "\n<tr >"										});
 	output.append(::gpk::view_const_string{ "\n<td style=\font-size:1.5em;\" >"			});
 	output.append(::gpk::view_const_string{ "\n<p style=\"color:black;font-size:1.5em;\" id=\""			});
-	output.append(itemName);
+	output.append(menuItem.Item);
 	output.append(::gpk::view_const_string{ "\" >"										});
-	output.append(txtIcon);
+	output.append(menuItem.Text);
 	output.append(::gpk::view_const_string{"</p>"										});
 	output.append(::gpk::view_const_string{"\n</td>"									});
 	output.append(::gpk::view_const_string{"\n</tr>"									});
 	output.append(::gpk::view_const_string{"\n</table>"									});
-	//output.append(::gpk::view_const_string{ "</a>"									});
 	return 0;
 }
 
@@ -172,7 +165,7 @@
 		output.append(::gpk::view_const_string{iconWidth});
 		output.append(::gpk::view_const_string{"\" >"});
 
-		::ntl::htmlControlMenuIcon(pathImages, extensionImages, currentItem.Item, currentItem.Text, output, iconsLarge);	// ------ Unknown icon
+		::ntl::htmlControlMenuIcon(pathImages, extensionImages, currentItem, output, iconsLarge);	// ------ Unknown icon
 		output.append(::gpk::view_const_string{"\n</td>"});
 	}
 	output.append(::gpk::view_const_string{"\n</tr>"			});

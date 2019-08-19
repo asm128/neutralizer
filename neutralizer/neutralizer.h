@@ -33,6 +33,7 @@ namespace ntl
 
 	struct SHTMLIcon {
 				::gpk::view_const_string			Item	;
+				::gpk::view_const_string			Program	;
 				::gpk::view_const_string			Text	;
 	};
 
@@ -69,8 +70,7 @@ namespace ntl
 	::gpk::error_t								htmlControlMenuIcon
 		( const ::gpk::view_const_string	& pathImages
 		, const ::gpk::view_const_string	& extension
-		, const ::gpk::view_const_string	& itemName
-		, const ::gpk::view_const_string	& txtIcon
+		,	const ::ntl::SHTMLIcon			& menuItem
 		, ::gpk::array_pod<char_t>			& output
 		, bool								iconsLarge					= true
 		);
