@@ -124,7 +124,7 @@
 			output.append(viewWikiImageTitle);
 			output.append(::gpk::view_const_string{ "\" href=\""});
 			output.append(viewWikiImageHRef);
-			output.append(::gpk::view_const_string{ "\" class=\"image\" ><img decoding=\"async\" elementtiming=\"thumbnail\" alt=\""});
+			output.append(::gpk::view_const_string{ "\" class=\"image\" ><img style=\"width:320px;\" decoding=\"async\" elementtiming=\"thumbnail\" alt=\""});
 			output.append(viewWikiImageAlt);
 			output.append(::gpk::view_const_string{ "\" src=\""});
 			output.append(viewWikiImageSrc);
