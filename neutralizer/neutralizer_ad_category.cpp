@@ -76,6 +76,7 @@
 		::gpk::view_const_string								viewMapURL						= {};
 		const ::gpk::error_t									jsonIndexArrayPhone				= ::gpk::jsonExpressionResolve("phone"		, config.Reader, jsonIndexCurrentItem, viewMapURL);
 		const ::gpk::error_t									jsonIndexArrayWP				= ::gpk::jsonExpressionResolve("whatsapp"	, config.Reader, jsonIndexCurrentItem, viewMapURL);
+		const ::gpk::error_t									jsonIndexArrayAddr				= ::gpk::jsonExpressionResolve("address"	, config.Reader, jsonIndexCurrentItem, viewMapURL);
 		const ::gpk::error_t									jsonIndexMap					= ::gpk::jsonExpressionResolve("location"	, config.Reader, jsonIndexCurrentItem, viewMapURL);
 		if(lang == ::gpk::view_const_string{"es"}) {
 			const ::gpk::error_t									jsonIndexWiki					= ::gpk::jsonExpressionResolve("es.wiki"		, config.Reader, jsonIndexCurrentItem, viewWikiURL			);
@@ -150,6 +151,16 @@
 					output.append(::gpk::view_const_string{"\n</td>"});
 					output.append(::gpk::view_const_string{"\n</tr>"});
 				}
+				output.append(::gpk::view_const_string{ "\n<tr style=\"height:100%;\">"});
+				output.append(::gpk::view_const_string{ "\n<td style=\"background-color:lightgrey;text-align:center;font-size:24px;vertical-align:top;border-style:solid;border-top-width:1px;\">"});
+				// ----- Contact info
+				const ::gpk::error_t									countAddr						= ::gpk::jsonArraySize(*config.Reader[jsonIndexArrayAddr	]);
+				for(int32_t iPhone = 0; iPhone < countAddr	; ++iPhone) { ::gpk::view_const_string textPhone = config.Reader.View[::gpk::jsonArrayValueGet(*config.Reader[jsonIndexArrayAddr	], iPhone)]; output.append(textPhone); output.append(::gpk::view_const_string{"\n<br />"}); }
+
+
+				//
+				output.append(::gpk::view_const_string{"\n</td>"});
+				output.append(::gpk::view_const_string{"\n</tr>"});
 				output.append(::gpk::view_const_string{ "\n<tr style=\"height:100%;\">"});
 				output.append(::gpk::view_const_string{ "\n<td style=\"background-color:lightgrey;text-align:center;font-size:24px;vertical-align:top;border-style:solid;border-top-width:1px;\">"});
 				// ----- Contact info
