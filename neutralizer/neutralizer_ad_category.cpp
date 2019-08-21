@@ -33,6 +33,7 @@
 }
 
 struct SItemViews {
+	uint32_t											ItemIndex					= 0;
 	::gpk::view_const_string							URL							= {};
 	::gpk::view_const_string							Name						= {};
 	::gpk::view_const_string							Title						= {};
@@ -42,15 +43,18 @@ struct SItemViews {
 	::gpk::view_const_string							ImageTitle					= {};
 	::gpk::view_const_string							ImageAlt					= {};
 	::gpk::view_const_string							MapURL						= {};
+	::gpk::array_obj<::gpk::view_const_string>			Phones						= {};
+	::gpk::array_obj<::gpk::view_const_string>			Addresses					= {};
+	::gpk::array_obj<::gpk::view_const_string>			WPs							= {};
 };
 
 ::gpk::error_t										ntl::htmlBoardGenerate				(const ::gpk::view_const_string & contentFileName, const ::gpk::SCoord2<uint32_t> screenSize, const ::ntl::AD_SHOP_CATEGORY category, const ::gpk::view_const_string & title, const ::gpk::view_const_string & lang, ::gpk::array_pod<char_t> & output)	{
 	//---------------------
 	::gpk::SJSONFile										config								= {};
 	gpk_necall(::gpk::jsonFileRead(config, contentFileName), "Failed to load configuration file: %s.", contentFileName);
-	SItemViews												views;
-	::gpk::array_pod<uint32_t>								indicesToDisplay					= {};
+	::gpk::array_pod<SItemViews>							indicesToDisplay					= {};
 	for(int32_t iItem = 0, countItems = ::gpk::jsonArraySize(*config.Reader[0]); iItem < countItems; ++iItem) {
+		SItemViews												views								= {(uint32_t)iItem};
 		const ::gpk::error_t									jsonIndexCurrentItem				= ::gpk::jsonArrayValueGet(*config.Reader[0], iItem);
 		::gpk::view_const_string								viewWikiCategory					= {};
 		const ::gpk::error_t									jsonIndexArrayCategory				= ::gpk::jsonExpressionResolve("category", config.Reader, jsonIndexCurrentItem, viewWikiCategory);
@@ -65,13 +69,68 @@ struct SItemViews {
 		}
 		if(false == isCategory)
 			continue;
-		gpk_necall(indicesToDisplay.push_back(iItem), "%s", "Out of memory?");
+
+		// ---- Root arrays.
+		const ::gpk::error_t									jsonIndexArrayPhone				= ::gpk::jsonExpressionResolve("phone"		, config.Reader, jsonIndexCurrentItem, views.MapURL		);
+		const ::gpk::error_t									jsonIndexArrayWP				= ::gpk::jsonExpressionResolve("whatsapp"	, config.Reader, jsonIndexCurrentItem, views.MapURL		);
+		const ::gpk::error_t									jsonIndexArrayAddr				= ::gpk::jsonExpressionResolve("address"	, config.Reader, jsonIndexCurrentItem, views.MapURL		);
+		// ---- Root properties.
+		const ::gpk::error_t									jsonIndexName					= ::gpk::jsonExpressionResolve("name"		, config.Reader, jsonIndexCurrentItem, views.Name		);
+		const ::gpk::error_t									jsonIndexMap					= ::gpk::jsonExpressionResolve("location"	, config.Reader, jsonIndexCurrentItem, views.MapURL		);
+		// ---- Language-based properties.
+		const ::gpk::error_t									jsonIndexLang					= ::gpk::jsonExpressionResolve(lang			, config.Reader, jsonIndexCurrentItem, views.URL		);
+		const ::gpk::error_t									jsonIndexWiki					= ::gpk::jsonExpressionResolve("wiki"		, config.Reader, jsonIndexLang, views.URL				);
+		const ::gpk::error_t									jsonIndexTitle					= ::gpk::jsonExpressionResolve("title"		, config.Reader, jsonIndexLang, views.Title				);
+		const ::gpk::error_t									jsonIndexText					= ::gpk::jsonExpressionResolve("text"		, config.Reader, jsonIndexLang, views.Text				);
+		const ::gpk::error_t									jsonIndexImageHRef				= ::gpk::jsonExpressionResolve("image.href"	, config.Reader, jsonIndexLang, views.ImageHRef			);
+		const ::gpk::error_t									jsonIndexImageSrc				= ::gpk::jsonExpressionResolve("image.src"	, config.Reader, jsonIndexLang, views.ImageSrc			);
+		const ::gpk::error_t									jsonIndexImageTitle				= ::gpk::jsonExpressionResolve("image.title", config.Reader, jsonIndexLang, views.ImageTitle		);
+		const ::gpk::error_t									jsonIndexImageAlt				= ::gpk::jsonExpressionResolve("image.alt"	, config.Reader, jsonIndexLang, views.ImageAlt			);
+
+		const ::gpk::error_t									countPhones						= ::gpk::jsonArraySize(*config.Reader[jsonIndexArrayPhone	]);
+		const ::gpk::error_t									countWPs						= ::gpk::jsonArraySize(*config.Reader[jsonIndexArrayWP		]);
+		const ::gpk::error_t									countAddr						= ::gpk::jsonArraySize(*config.Reader[jsonIndexArrayAddr]);
+
+		for(int32_t iPhone = 0; iPhone < countAddr; ++iPhone) {
+			::gpk::view_const_string								textPhone						= config.Reader.View[::gpk::jsonArrayValueGet(*config.Reader[jsonIndexArrayAddr], iPhone)];
+			views.Addresses.push_back(textPhone);
+		}
+
+		for(int32_t iPhone = 0; iPhone < countPhones	; ++iPhone) {
+			::gpk::view_const_string								textPhone						= config.Reader.View[::gpk::jsonArrayValueGet(*config.Reader[jsonIndexArrayPhone], iPhone)];
+			views.Phones.push_back(textPhone);
+		}
+
+		for(int32_t iPhone = 0; iPhone < countWPs		; ++iPhone) {
+			::gpk::view_const_string								textPhone						= config.Reader.View[::gpk::jsonArrayValueGet(*config.Reader[jsonIndexArrayWP], iPhone)];
+			views.WPs.push_back(textPhone);
+		}
+
+		gpk_necall(indicesToDisplay.push_back(views), "%s", "Out of memory?");
 	}
 	char													fontSize	[32]					= {};
 	if(screenSize.x > screenSize.y)
 		sprintf_s(fontSize, "%u", screenSize.x ? screenSize.x / 45 : 24);
 	else
 		sprintf_s(fontSize, "%u", screenSize.y ? screenSize.y / 34 : 24);
+
+	struct SWordIndices {
+		::gpk::view_const_string		Text;
+		::gpk::array_pod<uint32_t>		Indices;
+	};
+
+	//::gpk::array_obj<SWordIndices>	wordSet;
+	//for(int32_t iItem = 0, countItems = indicesToDisplay.size(); iItem < countItems; ++iItem) {
+	//	bool bFound = false;
+	//	::gpk::array_obj<::gpk::view_const_string>					itemWords;
+	//	::gpk::split(, ' ', itemWords);
+	//	for(uint32_t iWordInSet = 0; iWordInSet < wordSet.size(); ++iWordInSet) {
+	//		if()
+	//	}
+	//
+	//	if(false == bFound)
+	//		wordSet.push_back();
+	//}
 
 	output.append(::gpk::view_const_string{"\n<div style=\"background-color:#ffffff;position:sticky;left:0;top:0;\">"});
 	output.append(::gpk::view_const_string{ "\n<table style=\"left:0px;top:0px;position:sticky;width:100%;height:100%;text-align:center;\">"});
@@ -88,7 +147,7 @@ struct SItemViews {
 	output.append(::gpk::view_const_string{"\n<img src=\"/obelisco/image/blank.png\"/>"});
 	output.append(::gpk::view_const_string{"\n</td>"});
 	output.append(::gpk::view_const_string{ "\n<td style=\"position:sticky;left:0px;top:0px;width:100%;text-align:left;vertical-align:top;\">"});
-	output.append(::gpk::view_const_string{"<input style=\"position:sticky;left:0px;top:0px;font-size:24px;border-width:1px;width:50%;text-align:left;border-style:solid;border-radius:8px;\" type=\"text\"></input>"});
+	output.append(::gpk::view_const_string{"<input onclick=\"return false\" style=\"position:sticky;left:0px;top:0px;font-size:24px;border-width:1px;width:50%;text-align:left;border-style:solid;border-radius:8px;\" type=\"text\"></input>"});
 	output.append(::gpk::view_const_string{"\n</td>"});
 	output.append(::gpk::view_const_string{"\n</tr>"});
 	output.append(::gpk::view_const_string{"\n</table>"});
@@ -110,24 +169,7 @@ struct SItemViews {
 	output.append(::gpk::view_const_string{ "\n<table style=\"width:100%;text-align:center;border-style:solid;border-width:2px;\" >"});
 	::gpk::array_pod<char_t>								base64Id;
 	for(int32_t iItem = 0, countItems = indicesToDisplay.size(); iItem < countItems; ++iItem) {
-		const ::gpk::error_t									jsonIndexCurrentItem			= ::gpk::jsonArrayValueGet(*config.Reader[0], indicesToDisplay[iItem]);
-		// ---- Root arrays.
-		const ::gpk::error_t									jsonIndexArrayPhone				= ::gpk::jsonExpressionResolve("phone"		, config.Reader, jsonIndexCurrentItem, views.MapURL		);
-		const ::gpk::error_t									jsonIndexArrayWP				= ::gpk::jsonExpressionResolve("whatsapp"	, config.Reader, jsonIndexCurrentItem, views.MapURL		);
-		const ::gpk::error_t									jsonIndexArrayAddr				= ::gpk::jsonExpressionResolve("address"	, config.Reader, jsonIndexCurrentItem, views.MapURL		);
-		// ---- Root properties.
-		const ::gpk::error_t									jsonIndexName					= ::gpk::jsonExpressionResolve("name"		, config.Reader, jsonIndexCurrentItem, views.Name		);
-		const ::gpk::error_t									jsonIndexMap					= ::gpk::jsonExpressionResolve("location"	, config.Reader, jsonIndexCurrentItem, views.MapURL		);
-		// ---- Language-based properties.
-		const ::gpk::error_t									jsonIndexLang					= ::gpk::jsonExpressionResolve(lang			, config.Reader, jsonIndexCurrentItem, views.URL		);
-		const ::gpk::error_t									jsonIndexWiki					= ::gpk::jsonExpressionResolve("wiki"		, config.Reader, jsonIndexLang, views.URL				);
-		const ::gpk::error_t									jsonIndexTitle					= ::gpk::jsonExpressionResolve("title"		, config.Reader, jsonIndexLang, views.Title				);
-		const ::gpk::error_t									jsonIndexText					= ::gpk::jsonExpressionResolve("text"		, config.Reader, jsonIndexLang, views.Text				);
-		const ::gpk::error_t									jsonIndexImageHRef				= ::gpk::jsonExpressionResolve("image.href"	, config.Reader, jsonIndexLang, views.ImageHRef			);
-		const ::gpk::error_t									jsonIndexImageSrc				= ::gpk::jsonExpressionResolve("image.src"	, config.Reader, jsonIndexLang, views.ImageSrc			);
-		const ::gpk::error_t									jsonIndexImageTitle				= ::gpk::jsonExpressionResolve("image.title", config.Reader, jsonIndexLang, views.ImageTitle		);
-		const ::gpk::error_t									jsonIndexImageAlt				= ::gpk::jsonExpressionResolve("image.alt"	, config.Reader, jsonIndexLang, views.ImageAlt			);
-
+		const SItemViews										& views						= indicesToDisplay[iItem];
 		::gpk::base64EncodeFS(views.Name, base64Id);
 
 		output.append(::gpk::view_const_string{"\n<tr id=\""});
@@ -191,10 +233,8 @@ struct SItemViews {
 				output.append(::gpk::view_const_string{ "\n<tr style=\"height:100%;\">"});
 				output.append(::gpk::view_const_string{ "\n<td style=\"background-color:lightgrey;text-align:center;font-size:24px;vertical-align:top;border-style:solid;border-top-width:1px;\">"});
 				// ----- Addresses
-				const ::gpk::error_t									countAddr						= ::gpk::jsonArraySize(*config.Reader[jsonIndexArrayAddr]);
-				for(int32_t iPhone = 0; iPhone < countAddr; ++iPhone) {
-					::gpk::view_const_string								textPhone						= config.Reader.View[::gpk::jsonArrayValueGet(*config.Reader[jsonIndexArrayAddr], iPhone)];
-					output.append(textPhone);
+				for(uint32_t iPhone = 0, countAddr = views.Addresses.size(); iPhone < countAddr; ++iPhone) {
+					output.append(views.Addresses[iPhone]);
 					output.append(::gpk::view_const_string{"\n<br />"});
 				}
 
@@ -204,16 +244,15 @@ struct SItemViews {
 				// ----- Phones
 				output.append(::gpk::view_const_string{ "\n<tr style=\"height:100%;\">"});
 				output.append(::gpk::view_const_string{ "\n<td style=\"background-color:lightgrey;text-align:center;font-size:24px;vertical-align:top;border-style:solid;border-top-width:1px;\">"});
-				const ::gpk::error_t									countPhones						= ::gpk::jsonArraySize(*config.Reader[jsonIndexArrayPhone	]);
-				const ::gpk::error_t									countWPs						= ::gpk::jsonArraySize(*config.Reader[jsonIndexArrayWP		]);
-				for(int32_t iPhone = 0; iPhone < countPhones	; ++iPhone) {
-					::gpk::view_const_string								textPhone						= config.Reader.View[::gpk::jsonArrayValueGet(*config.Reader[jsonIndexArrayPhone], iPhone)];
+
+				for(uint32_t iPhone = 0, countPhones = views.Phones.size(); iPhone < countPhones; ++iPhone) {
+					::gpk::view_const_string								textPhone						= views.Phones[iPhone];
 					output.append(textPhone);
 					output.append(::gpk::view_const_string{"\n<br />"});
-				}
 
-				for(int32_t iPhone = 0; iPhone < countWPs		; ++iPhone) {
-					::gpk::view_const_string								textPhone						= config.Reader.View[::gpk::jsonArrayValueGet(*config.Reader[jsonIndexArrayWP], iPhone)];
+				}
+				for(uint32_t iPhone = 0, countWPs	 = views.WPs	.size(); iPhone < countWPs		; ++iPhone) {
+					::gpk::view_const_string								textPhone						= views.WPs[iPhone];
 					output.append(::gpk::view_const_string{"\n<a target=\"blank\" href=\"https://wa.me/"});
 					output.append(textPhone);
 					output.append(::gpk::view_const_string{"\" >"});
