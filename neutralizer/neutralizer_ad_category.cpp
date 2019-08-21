@@ -32,17 +32,40 @@
 }
 
 struct SItemViews {
-	::gpk::view_const_string					URL							= {};
-	::gpk::view_const_string					Title						= {};
-	::gpk::view_const_string					Text						= {};
-	::gpk::view_const_string					ImageHRef					= {};
-	::gpk::view_const_string					ImageSrc					= {};
-	::gpk::view_const_string					ImageTitle					= {};
-	::gpk::view_const_string					ImageAlt					= {};
-	::gpk::view_const_string					MapURL						= {};
+	::gpk::view_const_string							URL							= {};
+	::gpk::view_const_string							Title						= {};
+	::gpk::view_const_string							Text						= {};
+	::gpk::view_const_string							ImageHRef					= {};
+	::gpk::view_const_string							ImageSrc					= {};
+	::gpk::view_const_string							ImageTitle					= {};
+	::gpk::view_const_string							ImageAlt					= {};
+	::gpk::view_const_string							MapURL						= {};
 };
 
-::gpk::error_t								ntl::htmlBoardGenerate				(const ::gpk::view_const_string & contentFileName, const ::ntl::AD_SHOP_CATEGORY category, const ::gpk::view_const_string & title, const ::gpk::view_const_string & lang, ::gpk::array_pod<char_t> & output)	{
+::gpk::error_t										ntl::htmlBoardGenerate				(const ::gpk::view_const_string & contentFileName, const ::ntl::AD_SHOP_CATEGORY category, const ::gpk::view_const_string & title, const ::gpk::view_const_string & lang, ::gpk::array_pod<char_t> & output)	{
+	//---------------------
+	::gpk::SJSONFile										config								= {};
+	gpk_necall(::gpk::jsonFileRead(config, contentFileName), "Failed to load configuration file: %s.", contentFileName);
+	SItemViews												views;
+	::gpk::array_pod<uint32_t>								indicesToDisplay					= {};
+	for(int32_t iItem = 0, countItems = ::gpk::jsonArraySize(*config.Reader[0]); iItem < countItems; ++iItem) {
+		const ::gpk::error_t									jsonIndexCurrentItem				= ::gpk::jsonArrayValueGet(*config.Reader[0], iItem);
+		::gpk::view_const_string								viewWikiCategory					= {};
+		const ::gpk::error_t									jsonIndexArrayCategory				= ::gpk::jsonExpressionResolve("category", config.Reader, jsonIndexCurrentItem, viewWikiCategory);
+		bool													isCategory							= false;
+		for(uint32_t iCat = 0, countCat = (uint32_t)::gpk::jsonArraySize(*config.Reader[jsonIndexArrayCategory]); iCat < countCat; ++iCat) {
+			const ::gpk::error_t									jsonIndexNodeCategory				= ::gpk::jsonArrayValueGet(*config.Reader[jsonIndexArrayCategory], iCat);
+			const ::gpk::SJSONToken									& jsonToken							= config.Reader.Token[jsonIndexNodeCategory];
+			if(category == jsonToken.Value) {
+				isCategory											= true;
+				break;
+			}
+		}
+		if(false == isCategory)
+			continue;
+		gpk_necall(indicesToDisplay.push_back(iItem), "%s", "Out of memory?");
+	}
+
 	output.append(::gpk::view_const_string{ "\n<table style=\"width:100%;height:100%;text-align:center;\">"});
 
 	output.append(::gpk::view_const_string{ "\n<tr style=\"\" >"});
@@ -54,29 +77,6 @@ struct SItemViews {
 	output.append(::gpk::view_const_string{"\n</tr>"});
 	output.append(::gpk::view_const_string{ "\n<tr style=\"\" >"});
 	output.append(::gpk::view_const_string{ "\n<td style=\"width:100%;font-size:24px; font-weight:bold; vertical-align:top;\">"});
-
-	//---------------------
-	::gpk::SJSONFile										config							= {};
-	gpk_necall(::gpk::jsonFileRead(config, contentFileName), "Failed to load configuration file: %s.", contentFileName);
-	SItemViews												views;
-	::gpk::array_pod<uint32_t>								indicesToDisplay				= {};
-	for(int32_t iItem = 0, countItems = ::gpk::jsonArraySize(*config.Reader[0]); iItem < countItems; ++iItem) {
-		const ::gpk::error_t									jsonIndexCurrentItem			= ::gpk::jsonArrayValueGet(*config.Reader[0], iItem);
-		::gpk::view_const_string								viewWikiCategory				= {};
-		const ::gpk::error_t									jsonIndexArrayCategory			= ::gpk::jsonExpressionResolve("category"	, config.Reader, jsonIndexCurrentItem, viewWikiCategory);
-		bool													isCategory						= false;
-		for(uint32_t iCat = 0, countCat = (uint32_t)::gpk::jsonArraySize(*config.Reader[jsonIndexArrayCategory]); iCat < countCat; ++iCat) {
-			const ::gpk::error_t									jsonIndexNodeCategory			= ::gpk::jsonArrayValueGet(*config.Reader[jsonIndexArrayCategory], iCat);
-			const ::gpk::SJSONToken									& jsonToken						= config.Reader.Token[jsonIndexNodeCategory];
-			if(category == jsonToken.Value) {
-				isCategory											= true;
-				break;
-			}
-		}
-		if(false == isCategory)
-			continue;
-		gpk_necall(indicesToDisplay.push_back(iItem), "%s", "Out of memory?");
-	}
 
 	output.append(::gpk::view_const_string{ "\n<table style=\"width:100%;text-align:center;border-style:solid;border-width:2px;\" >"});
 	for(int32_t iItem = 0, countItems = indicesToDisplay.size(); iItem < countItems; ++iItem) {
