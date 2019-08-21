@@ -347,7 +347,7 @@ struct SItemViews {
 			//sprintf_s(fontSize, "%u", element.Indices[iArticle]);
 			//output.append(::gpk::view_const_string{fontSize});
 			//::gpk::base64EncodeFS(indicesToDisplay[element.Indices[iArticle]].Name, base64Id);
-			sprintf_s(tempIntStr, "%u", iArticle);
+			sprintf_s(tempIntStr, "%u", element.Indices[iArticle]);
 			::gpk::base64EncodeFS(::gpk::view_const_string{tempIntStr}, base64Id);
 
 			output.append(::gpk::view_const_string{"'"});
