@@ -4,6 +4,7 @@
 
 #include "gpk_json_expression.h"
 #include "gpk_base64.h"
+#include "gpk_find.h"
 
 ::gpk::error_t								ntl::pageCatalog					(const ::gpk::view_const_string & contentFileName, const ::gpk::SCoord2<uint32_t> screenSize, const ::gpk::view_const_string & pathStyles, const AD_SHOP_CATEGORY category, const ::gpk::view_const_string & title, const ::gpk::view_const_string & lang, ::gpk::array_pod<char_t> & output) {
 
@@ -52,7 +53,7 @@ struct SItemViews {
 	//---------------------
 	::gpk::SJSONFile										config								= {};
 	gpk_necall(::gpk::jsonFileRead(config, contentFileName), "Failed to load configuration file: %s.", contentFileName);
-	::gpk::array_pod<SItemViews>							indicesToDisplay					= {};
+	::gpk::array_obj<SItemViews>							indicesToDisplay					= {};
 	for(int32_t iItem = 0, countItems = ::gpk::jsonArraySize(*config.Reader[0]); iItem < countItems; ++iItem) {
 		SItemViews												views								= {(uint32_t)iItem};
 		const ::gpk::error_t									jsonIndexCurrentItem				= ::gpk::jsonArrayValueGet(*config.Reader[0], iItem);
@@ -119,18 +120,32 @@ struct SItemViews {
 		::gpk::array_pod<uint32_t>		Indices;
 	};
 
-	//::gpk::array_obj<SWordIndices>	wordSet;
-	//for(int32_t iItem = 0, countItems = indicesToDisplay.size(); iItem < countItems; ++iItem) {
-	//	bool bFound = false;
-	//	::gpk::array_obj<::gpk::view_const_string>					itemWords;
-	//	::gpk::split(, ' ', itemWords);
-	//	for(uint32_t iWordInSet = 0; iWordInSet < wordSet.size(); ++iWordInSet) {
-	//		if()
-	//	}
-	//
-	//	if(false == bFound)
-	//		wordSet.push_back();
-	//}
+	::gpk::array_obj<SWordIndices>	wordSet;
+	for(uint32_t iItem = 0, countItems = indicesToDisplay.size(); iItem < countItems; ++iItem) {
+		::gpk::array_obj<::gpk::view_const_string>					itemWords;
+		::gpk::split(indicesToDisplay[iItem].Text, ' ', itemWords);
+		for(uint32_t iItemWord = 0; iItemWord < itemWords.size(); ++iItemWord) {
+			::gpk::view_const_string								itemWord						= itemWords[iItemWord];
+			if(1 >= itemWord.size())
+				continue;
+			bool													bFound							= false;
+			if(',' == itemWord[itemWord.size() - 1] || '.' == itemWord[itemWord.size() - 1]) {
+				itemWord											= {itemWord.begin(), itemWord.size() - 1};
+				if(0 >= itemWord.size())
+					continue;
+			}
+			for(uint32_t iWordInSet = 0; iWordInSet < wordSet.size(); ++iWordInSet) {
+				SWordIndices											& dictWord						= wordSet[iWordInSet];
+				if(itemWord != dictWord.Text)
+					continue;
+				bFound												= true;
+				if(0 > ::gpk::find(iItem, {dictWord.Indices.begin(), dictWord.Indices.size()}))
+					dictWord.Indices.push_back(iItem);
+			}
+			if(false == bFound)
+				wordSet[wordSet.push_back({itemWord})].Indices.push_back(iItem);
+		}
+	}
 
 	output.append(::gpk::view_const_string{"\n<div style=\"background-color:#ffffff;position:sticky;left:0;top:0;\">"});
 	output.append(::gpk::view_const_string{ "\n<table style=\"left:0px;top:0px;position:sticky;width:100%;height:100%;text-align:center;\">"});
@@ -170,6 +185,7 @@ struct SItemViews {
 	::gpk::array_pod<char_t>								base64Id;
 	for(int32_t iItem = 0, countItems = indicesToDisplay.size(); iItem < countItems; ++iItem) {
 		const SItemViews										& views						= indicesToDisplay[iItem];
+		base64Id.clear();
 		::gpk::base64EncodeFS(views.Name, base64Id);
 
 		output.append(::gpk::view_const_string{"\n<tr id=\""});
@@ -278,7 +294,23 @@ struct SItemViews {
 	output.append(::gpk::view_const_string{"\n</table>"});
 
 	output.append(::gpk::view_const_string{"\n<script>"});
-	output.append(::gpk::view_const_string{""});
+	output.append(::gpk::view_const_string{"var l = ["});
+	for(uint32_t iWord = 0; iWord < wordSet.size(); ++iWord) {
+		output.append(::gpk::view_const_string{" '"});
+		const SWordIndices		& element = wordSet[iWord];
+		output.append(element.Text);
+		output.append(::gpk::view_const_string{"' : ["});
+		for(uint32_t iArticle = 0; iArticle < element.Indices.size(); ++iArticle) {
+			sprintf_s(fontSize, "%u", element.Indices[iArticle]);
+			output.append(::gpk::view_const_string{fontSize});
+			if(iArticle < (element.Indices.size() - 1))
+				output.append(::gpk::view_const_string{","});
+		}
+		output.append(::gpk::view_const_string{"]"});
+		if(iWord < (wordSet.size() - 1))
+			output.append(::gpk::view_const_string{","});
+	}
+	output.append(::gpk::view_const_string{"]"});
 	output.append(::gpk::view_const_string{"\n</script>"});
 
 	output.append(::gpk::view_const_string{"\n</td>"});
