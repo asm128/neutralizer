@@ -329,10 +329,17 @@ struct SItemViews {
 	output.append(::gpk::view_const_string{"\nvar names = ["});
 	for(uint32_t iWord = 0; iWord < wordSet.size(); ++iWord) {
 		const SWordIndices		& element = wordSet[iWord];
-		output.append(::gpk::view_const_string{" '"});
 		info_printf("Word: %s.", element.Text.begin());
-		output.append(element.Text);
-		output.append(::gpk::view_const_string{"'"});
+		if(0 <= ::gpk::find('\'', ::gpk::view_array{element.Text.begin(), element.Text.size()})) {
+			output.append(::gpk::view_const_string{"\""});
+			output.append(element.Text);
+			output.append(::gpk::view_const_string{"\""});
+		}
+		else {
+			output.append(::gpk::view_const_string{" '"});
+			output.append(element.Text);
+			output.append(::gpk::view_const_string{"'"});
+		}
 		if(iWord < (wordSet.size() - 1))
 			output.append(::gpk::view_const_string{","});
 	}
