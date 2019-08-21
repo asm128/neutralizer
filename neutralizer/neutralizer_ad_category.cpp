@@ -377,12 +377,12 @@ struct SItemViews {
 
 	output.append(::gpk::view_const_string{"\nfunction obeSearch(textToFind) {"});
 	output.append(::gpk::view_const_string{"\n	var pos = 0;"
-		"\n textToFind = textToFind.toLowerCase();"
+		"\n var toFind = textToFind.toLowerCase();"
 		"\n	for(pos = 0; pos < idList.length; pos = pos +1) {"
 		"\n		document.getElementById(idList[pos]).style.visibility = 'collapse';"
 		"\n	}"
 		"\n	for(pos = 0; pos < names.length; pos = pos +1) {"
-		"\n		if(names[pos].indexOf(textToFind) > -1) {"
+		"\n		if(names[pos].indexOf(toFind) > -1) {"
 		"\n			var idc = 0;"
 		"\n			for(idc = 0; idc < indices[pos].length; idc++) {"
 		"\n				document.getElementById(indices[pos][idc]).style.visibility = 'visible';"
