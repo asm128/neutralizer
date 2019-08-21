@@ -377,7 +377,7 @@ struct SItemViews {
 
 	output.append(::gpk::view_const_string{"\nfunction obeSearch(textToFind) {"});
 	output.append(::gpk::view_const_string{"\n	var pos = 0;"
-		"\n textToFind.toLowerCase();"
+		"\n textToFind = textToFind.toLowerCase();"
 		"\n	for(pos = 0; pos < idList.length; pos = pos +1) {"
 		"\n		document.getElementById(idList[pos]).style.visibility = 'collapse';"
 		"\n	}"
