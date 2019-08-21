@@ -5,7 +5,7 @@
 #include "gpk_json_expression.h"
 #include "gpk_base64.h"
 
-::gpk::error_t								ntl::pageCatalog					(const ::gpk::view_const_string & contentFileName, const ::gpk::view_const_string & pathStyles, const AD_SHOP_CATEGORY category, const ::gpk::view_const_string & title, const ::gpk::view_const_string & lang, ::gpk::array_pod<char_t> & output) {
+::gpk::error_t								ntl::pageCatalog					(const ::gpk::view_const_string & contentFileName, const ::gpk::SCoord2<uint32_t> screenSize, const ::gpk::view_const_string & pathStyles, const AD_SHOP_CATEGORY category, const ::gpk::view_const_string & title, const ::gpk::view_const_string & lang, ::gpk::array_pod<char_t> & output) {
 
 	output.append(::gpk::view_const_string{ "\n<html>"});
 	output.append(::gpk::view_const_string{ "\n<head>"});
@@ -22,7 +22,7 @@
 	output.append(::gpk::view_const_string{ "\n<tr style=\"\" >"});
 	output.append(::gpk::view_const_string{ "\n<td style=\"font-size:16px; font-weight:bold; vertical-align:top;\">"});
 
-	::ntl::htmlBoardGenerate(contentFileName, category, title, lang, output);
+	::ntl::htmlBoardGenerate(contentFileName, screenSize, category, title, lang, output);
 
 	output.append(::gpk::view_const_string{"\n</td>"	});
 	output.append(::gpk::view_const_string{"\n</tr>"	});
@@ -44,7 +44,7 @@ struct SItemViews {
 	::gpk::view_const_string							MapURL						= {};
 };
 
-::gpk::error_t										ntl::htmlBoardGenerate				(const ::gpk::view_const_string & contentFileName, const ::ntl::AD_SHOP_CATEGORY category, const ::gpk::view_const_string & title, const ::gpk::view_const_string & lang, ::gpk::array_pod<char_t> & output)	{
+::gpk::error_t										ntl::htmlBoardGenerate				(const ::gpk::view_const_string & contentFileName, const ::gpk::SCoord2<uint32_t> screenSize, const ::ntl::AD_SHOP_CATEGORY category, const ::gpk::view_const_string & title, const ::gpk::view_const_string & lang, ::gpk::array_pod<char_t> & output)	{
 	//---------------------
 	::gpk::SJSONFile										config								= {};
 	gpk_necall(::gpk::jsonFileRead(config, contentFileName), "Failed to load configuration file: %s.", contentFileName);
@@ -67,6 +67,11 @@ struct SItemViews {
 			continue;
 		gpk_necall(indicesToDisplay.push_back(iItem), "%s", "Out of memory?");
 	}
+	char													fontSize	[32]					= {};
+	if(screenSize.x > screenSize.y)
+		sprintf_s(fontSize, "%u", screenSize.x ? screenSize.x / 45 : 24);
+	else
+		sprintf_s(fontSize, "%u", screenSize.y ? screenSize.y / 34 : 24);
 
 	output.append(::gpk::view_const_string{"\n<div style=\"background-color:#ffffff;position:sticky;left:0;top:0;\">"});
 	output.append(::gpk::view_const_string{ "\n<table style=\"left:0px;top:0px;position:sticky;width:100%;height:100%;text-align:center;\">"});
@@ -138,7 +143,9 @@ struct SItemViews {
 			output.append(::gpk::view_const_string{"\n</td>"});
 			output.append(::gpk::view_const_string{"\n</tr>"});
 			output.append(::gpk::view_const_string{ "\n<tr>"});
-			output.append(::gpk::view_const_string{ "\n<td style=\"background-color:white;height:100%;text-align:left;font-size:32px;vertical-align:top;\">"});
+			output.append(::gpk::view_const_string{ "\n<td style=\"background-color:white;height:100%;text-align:left;font-size:"});
+			output.append(::gpk::view_const_string{fontSize});
+			output.append(::gpk::view_const_string{ "px;vertical-align:top;\">"});
 			::ntl::htmlTag("p", views.Text, "style=\" font-weight:normal;text-align:left;\"", output);
 			//
 			output.append(::gpk::view_const_string{"\n</td>"});
