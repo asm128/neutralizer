@@ -127,6 +127,10 @@ struct SItemViews {
 		::gpk::split(indicesToDisplay[iItem].Text, ' ', itemWordsSupCase);
 		::gpk::array_obj<::gpk::array_pod<char_t>>					itemWords;
 		itemWords.resize(itemWordsSupCase.size());
+		itemWordsSupCase.clear();
+		::gpk::split(indicesToDisplay[iItem].Title, ' ', itemWordsSupCase);
+		for(uint32_t iTitleWord = 0; iTitleWord < itemWordsSupCase.size(); ++iTitleWord)
+			itemWords.push_back(itemWordsSupCase[iTitleWord]);
 		for(uint32_t iWord = 0; iWord < itemWordsSupCase.size(); ++iWord) {
 			::gpk::array_pod<char_t> & finalWord = itemWords[iWord];
 			finalWord.resize(itemWordsSupCase[iWord].size());
@@ -327,8 +331,8 @@ struct SItemViews {
 	//output.append(::gpk::view_const_string{"];"});
 
 	output.append(::gpk::view_const_string{"\nvar names = ["});
-	for(uint32_t iWord = 0; iWord < wordSet.size(); ++iWord) {
-		const SWordIndices		& element = wordSet[iWord];
+	for(uint32_t iWord = 0, countWords = wordSet.size(); iWord < countWords; ++iWord) {
+		const SWordIndices				& element			= wordSet[iWord];
 		info_printf("Word: %s.", element.Text.begin());
 		if(0 <= ::gpk::find('\'', ::gpk::view_array{element.Text.begin(), element.Text.size()})) {
 			output.append(::gpk::view_const_string{"\""});
@@ -383,22 +387,26 @@ struct SItemViews {
 	output.append(::gpk::view_const_string{"];"});
 
 	output.append(::gpk::view_const_string{"\nfunction obeSearch(textToFind) {"});
-	output.append(::gpk::view_const_string{"\n	var pos = 0;"
-		"\n var toFind = textToFind.toLowerCase();"
+	output.append(::gpk::view_const_string{
+		"\n var lowerToFind		= textToFind.toLowerCase();"
+		"\n	var wordsToFind		= lowerToFind.split(' ');"
+		"\n	var pos				= 0;"
 		"\n	for(pos = 0; pos < idList.length; pos = pos +1) {"
 		"\n		document.getElementById(idList[pos]).style.visibility = 'collapse';"
 		"\n	}"
 		"\n	for(pos = 0; pos < names.length; pos = pos +1) {"
-		"\n		if(names[pos].indexOf(toFind) > -1) {"
-		"\n			var idc = 0;"
-		"\n			for(idc = 0; idc < indices[pos].length; idc++) {"
-		"\n				document.getElementById(indices[pos][idc]).style.visibility = 'visible';"
+		"\n		for(toFind of wordsToFind) {"
+		"\n			if(names[pos].indexOf(toFind) > -1) {"
+		"\n				var idc = 0;"
+		"\n				for(idc = 0; idc < indices[pos].length; idc++) {"
+		"\n					document.getElementById(indices[pos][idc]).style.visibility = 'visible';"
+		"\n				}"
 		"\n			}"
 		"\n		}"
 		"\n	}"
 		});
 	output.append(::gpk::view_const_string{"\n}"});
-	output.append(::gpk::view_const_string{"\nfunction clearSearch(textToFind) {"});
+	output.append(::gpk::view_const_string{"\nfunction clearSearch() {"});
 	output.append(::gpk::view_const_string{"\n	var pos = 0;"
 		"\n	for(pos = 0; pos < idList.length; pos = pos +1) {"
 		"\n		document.getElementById(idList[pos]).style.visibility = 'visible';"
