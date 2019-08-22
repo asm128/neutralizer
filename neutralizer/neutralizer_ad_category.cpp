@@ -50,6 +50,54 @@ struct SItemViews {
 	::gpk::array_obj<::gpk::view_const_string>			WPs							= {};
 };
 
+static	::gpk::error_t								getWordList							(const SItemViews& item, ::gpk::array_obj<::gpk::array_pod<char_t>> & itemWords) {
+	::gpk::array_obj<::gpk::view_const_string>				upper;
+	gpk_necall(::gpk::split(item.Text	, ' ', upper), "%s", "Out of memory?");
+	gpk_necall(::gpk::split(item.Title	, ' ', upper), "%s", "Out of memory?");
+	gpk_necall(::gpk::split(item.URL	, ' ', upper), "%s", "Out of memory?");
+	gpk_necall(::gpk::split(item.Text	, ' ', upper), "%s", "Out of memory?");
+	for(uint32_t iAddr = 0; iAddr < item.Addresses.size(); ++iAddr)
+		gpk_necall(::gpk::split(item.Addresses[iAddr], ' ', upper), "%s", "Out of memory?");
+	for(uint32_t iAddr = 0; iAddr < item.Phones.size(); ++iAddr)
+		gpk_necall(::gpk::split(item.Phones[iAddr], ' ', upper), "%s", "Out of memory?");
+	for(uint32_t iAddr = 0; iAddr < item.WPs.size(); ++iAddr)
+		gpk_necall(::gpk::split(item.WPs[iAddr], ' ', upper), "%s", "Out of memory?");
+
+	gpk_necall(itemWords.resize(upper.size())	, "%s", "Out of memory?");
+	const ::gpk::TKeyValConstString								replaceDict	[]					=
+		{ ::gpk::TKeyValConstString{"áéíóú", "aeiou"}
+		, ::gpk::TKeyValConstString{"àèìòù", "aeiou"}
+		, ::gpk::TKeyValConstString{"äëïöü", "aeiou"}
+		, ::gpk::TKeyValConstString{"ãõñçºª", "aoncoa"}
+		};
+	::gpk::array_pod<char_t>	fixedWord;
+	for(uint32_t iWord = 0, countWords = upper.size(); iWord < countWords; ++iWord) {
+		::gpk::array_pod<char_t> & finalWord = itemWords[iWord];
+		finalWord.resize(upper[iWord].size());
+		memcpy(finalWord.begin(), upper[iWord].begin(), upper[iWord].size());
+		::gpk::tolower(finalWord);
+		fixedWord				= finalWord;
+		bool						replaced		= false;
+		for(uint32_t iChar = 0; iChar < fixedWord.size(); ++iChar) {
+			char					& wordChar		= fixedWord[iChar];
+			for(uint32_t iTable=0; iTable < ::gpk::size(replaceDict); ++iTable) {
+				const ::gpk::TKeyValConstString &	table = replaceDict[iTable];
+				for(uint32_t iItem=0; iItem < table.Key.size(); ++iItem)
+					if(wordChar == table.Key[iItem]) {
+						wordChar = table.Val[iItem];
+						replaced = true;
+					}
+			}
+		}
+		if(replaced) {
+			itemWords.push_back(fixedWord);
+			info_printf("fixedWord: %s.", fixedWord.begin());
+		}
+		info_printf("finalWord: %s.", finalWord.begin());
+	}
+	return 0;
+}
+
 ::gpk::error_t										ntl::htmlBoardGenerate				(const ::gpk::view_const_string & contentFileName, const ::gpk::SCoord2<uint32_t> screenSize, const ::ntl::AD_SHOP_CATEGORY category, const ::gpk::view_const_string & title, const ::gpk::view_const_string & lang, ::gpk::array_pod<char_t> & output)	{
 	//---------------------
 	::gpk::SJSONFile										config								= {};
@@ -110,7 +158,7 @@ struct SItemViews {
 
 		gpk_necall(indicesToDisplay.push_back(views), "%s", "Out of memory?");
 	}
-	char													fontSize	[32]					= {};
+	char														fontSize	[32]					= {};
 	if(screenSize.x > screenSize.y)
 		sprintf_s(fontSize, "%u", screenSize.x ? screenSize.x / 45 : 24);
 	else
@@ -121,23 +169,11 @@ struct SItemViews {
 		::gpk::array_pod<uint32_t>		Indices;
 	};
 
-	::gpk::array_obj<SWordIndices>	wordSet;
+	::gpk::array_obj<SWordIndices>								wordSet;
 	for(uint32_t iItem = 0, countItems = indicesToDisplay.size(); iItem < countItems; ++iItem) {
-		::gpk::array_obj<::gpk::view_const_string>					itemWordsSupCase;
-		::gpk::split(indicesToDisplay[iItem].Text, ' ', itemWordsSupCase);
 		::gpk::array_obj<::gpk::array_pod<char_t>>					itemWords;
-		itemWords.resize(itemWordsSupCase.size());
-		itemWordsSupCase.clear();
-		::gpk::split(indicesToDisplay[iItem].Title, ' ', itemWordsSupCase);
-		for(uint32_t iTitleWord = 0; iTitleWord < itemWordsSupCase.size(); ++iTitleWord)
-			itemWords.push_back(itemWordsSupCase[iTitleWord]);
-		for(uint32_t iWord = 0; iWord < itemWordsSupCase.size(); ++iWord) {
-			::gpk::array_pod<char_t> & finalWord = itemWords[iWord];
-			finalWord.resize(itemWordsSupCase[iWord].size());
-			memcpy(finalWord.begin(), itemWordsSupCase[iWord].begin(), itemWordsSupCase[iWord].size());
-			::gpk::tolower(finalWord);
-			info_printf("finalWord: %s.", finalWord.begin());
-		}
+		::getWordList(indicesToDisplay[iItem], itemWords);
+
 		for(uint32_t iItemWord = 0; iItemWord < itemWords.size(); ++iItemWord) {
 			::gpk::view_const_string								itemWord						= {itemWords[iItemWord].begin(), itemWords[iItemWord].size()};
 			info_printf("itemWord: %s.", itemWord.begin());
