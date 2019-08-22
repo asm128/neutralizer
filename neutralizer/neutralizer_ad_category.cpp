@@ -312,29 +312,13 @@ struct SItemViews {
 	output.append(::gpk::view_const_string{"\n</table>"});
 
 	output.append(::gpk::view_const_string{"\n<script charset=\"iso-8859-1\">"});
-	//output.append(::gpk::view_const_string{"var l = ["});
-	//for(uint32_t iWord = 0; iWord < wordSet.size(); ++iWord) {
-	//	output.append(::gpk::view_const_string{" '"});
-	//	const SWordIndices		& element = wordSet[iWord];
-	//	output.append(element.Text);
-	//	output.append(::gpk::view_const_string{"' : ["});
-	//	for(uint32_t iArticle = 0; iArticle < element.Indices.size(); ++iArticle) {
-	//		sprintf_s(fontSize, "%u", element.Indices[iArticle]);
-	//		output.append(::gpk::view_const_string{fontSize});
-	//		if(iArticle < (element.Indices.size() - 1))
-	//			output.append(::gpk::view_const_string{","});
-	//	}
-	//	output.append(::gpk::view_const_string{"]"});
-	//	if(iWord < (wordSet.size() - 1))
-	//		output.append(::gpk::view_const_string{","});
-	//}
-	//output.append(::gpk::view_const_string{"];"});
-
 	output.append(::gpk::view_const_string{"\nvar names = ["});
 	for(uint32_t iWord = 0, countWords = wordSet.size(); iWord < countWords; ++iWord) {
 		const SWordIndices				& element			= wordSet[iWord];
 		info_printf("Word: %s.", element.Text.begin());
 		if(0 <= ::gpk::find('\'', ::gpk::view_array{element.Text.begin(), element.Text.size()})) {
+			if(0 <= ::gpk::find('"', ::gpk::view_array{element.Text.begin(), element.Text.size()}))
+				continue;
 			output.append(::gpk::view_const_string{"\""});
 			output.append(element.Text);
 			output.append(::gpk::view_const_string{"\""});
@@ -355,9 +339,6 @@ struct SItemViews {
 		output.append(::gpk::view_const_string{"["});
 		for(uint32_t iArticle = 0; iArticle < element.Indices.size(); ++iArticle) {
 			base64Id.clear();
-			//sprintf_s(fontSize, "%u", element.Indices[iArticle]);
-			//output.append(::gpk::view_const_string{fontSize});
-			//::gpk::base64EncodeFS(indicesToDisplay[element.Indices[iArticle]].Name, base64Id);
 			sprintf_s(tempIntStr, "%u", element.Indices[iArticle]);
 			::gpk::base64EncodeFS(::gpk::view_const_string{tempIntStr}, base64Id);
 
