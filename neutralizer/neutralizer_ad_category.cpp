@@ -174,7 +174,7 @@ struct SItemViews {
 
 	output.append(::gpk::view_const_string{"\n</td>"});
 	output.append(::gpk::view_const_string{"\n<td style=\"position:sticky;left:0px;top:0px;sticky;font-size:24px;font-weight:bold;width:20px;text-align:left;vertical-align:top;\">"});
-	output.append(::gpk::view_const_string{"\n<img src=\"/obelisco/image/blank.png\"/>"});
+	//output.append(::gpk::view_const_string{"\n<img src=\"/obelisco/image/blank.png\"/>"});
 	output.append(::gpk::view_const_string{"\n</td>"});
 	output.append(::gpk::view_const_string{ "\n<td style=\"position:sticky;left:0px;top:0px;width:100%;text-align:left;vertical-align:top;\">"});
 	output.append(::gpk::view_const_string{"<input oninput=\"if(this.value.length > 0) obeSearch(this.value); else clearSearch();\" style=\"position:sticky;left:0px;top:0px;font-size:24px;border-width:1px;width:50%;text-align:left;border-style:solid;border-radius:8px;\" type=\"text\"></input>"});
@@ -198,13 +198,12 @@ struct SItemViews {
 
 	output.append(::gpk::view_const_string{ "\n<table style=\"width:100%;text-align:center;border-style:solid;border-width:2px;\" >"});
 	::gpk::array_pod<char_t>								base64Id;
-	char													tempIntStr[256] = {};
+	char													tempIntStr[256]				= {};
 	for(int32_t iItem = 0, countItems = indicesToDisplay.size(); iItem < countItems; ++iItem) {
 		const SItemViews										& views						= indicesToDisplay[iItem];
 		base64Id.clear();
 		sprintf_s(tempIntStr, "%u", iItem);
 		::gpk::base64EncodeFS(::gpk::view_const_string{tempIntStr}, base64Id);
-		//::gpk::base64EncodeFS(views.Name, base64Id);
 
 		output.append(::gpk::view_const_string{"\n<tr id=\""});
 		output.append(::gpk::view_const_string{base64Id.begin(), base64Id.size()});
