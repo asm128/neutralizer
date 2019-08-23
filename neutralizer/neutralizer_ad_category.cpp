@@ -7,7 +7,7 @@
 #include "gpk_find.h"
 #include "gpk_stdstring.h"
 
-static const ::gpk::view_const_string		jsSearch							=
+static	const ::gpk::view_const_string				jsSearch							=
 	"\nfunction obeSearch(textToFind) {"
 	"\n var lowerToFind		= textToFind.toLowerCase();"
 	"\n	var wordsToFind		= lowerToFind.split(' ');"
@@ -36,33 +36,6 @@ static const ::gpk::view_const_string		jsSearch							=
 	"\n}"
 	;
 
-::gpk::error_t								ntl::pageCatalog					(const ::gpk::view_const_string & contentFileName, const ::gpk::SCoord2<uint32_t> screenSize, const ::gpk::view_const_string & pathStyles, const AD_SHOP_CATEGORY category, const ::gpk::view_const_string & title, const ::gpk::view_const_string & lang, ::gpk::array_pod<char_t> & output) {
-
-	output.append(::gpk::view_const_string{ "\n<html>"});
-	output.append(::gpk::view_const_string{ "\n<head>"});
-	output.append(::gpk::view_const_string{ "\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=iso-8859-1\" />"});
-
-	::gpk::array_pod<char_t>								fileStyle			;
-	::ntl::httpPath(pathStyles, "blankstyle", "css"	, fileStyle);
-	::ntl::htmlHeaderTitle		(title, output);
-	::ntl::htmlHeaderStyleLink	({fileStyle.begin(), fileStyle.size()}, output);
-	output.append(::gpk::view_const_string{"\n</head>"});
-
-	output.append(::gpk::view_const_string{"\n<body style=\"width:100%;height:100%;background-color:#E0E0E0;font-family:Arial;\">"	}); // 202050
-	output.append(::gpk::view_const_string{ "\n<table style=\"width:100%;height:100%;text-align:center;\">"	});
-	output.append(::gpk::view_const_string{ "\n<tr style=\"\" >"});
-	output.append(::gpk::view_const_string{ "\n<td style=\"font-size:16px; font-weight:bold; vertical-align:top;\">"});
-
-	::ntl::htmlBoardGenerate(contentFileName, screenSize, category, title, lang, output);
-
-	output.append(::gpk::view_const_string{"\n</td>"	});
-	output.append(::gpk::view_const_string{"\n</tr>"	});
-	output.append(::gpk::view_const_string{"\n</table>"	});
-	output.append(::gpk::view_const_string{"\n</body>"	});
-	output.append(::gpk::view_const_string{"\n</html>"	});
-	return 0;
-}
-
 struct SItemViews {
 	uint32_t											ItemIndex					= 0;
 	::gpk::view_const_string							URL							= {};
@@ -79,20 +52,17 @@ struct SItemViews {
 	::gpk::array_obj<::gpk::view_const_string>			WPs							= {};
 };
 
-static	::gpk::error_t								getWordList							(const SItemViews& item, ::gpk::array_obj<::gpk::array_pod<char_t>> & itemWords) {
+static	::gpk::error_t								getWordList							(const ::SItemViews& item, ::gpk::array_obj<::gpk::array_pod<char_t>> & itemWords) {
 	::gpk::array_obj<::gpk::view_const_string>				upper								= {};
 	gpk_necall(::gpk::split(item.Text	, ' ', upper), "%s", "Out of memory?");
 	gpk_necall(::gpk::split(item.Title	, ' ', upper), "%s", "Out of memory?");
 	gpk_necall(::gpk::split(item.URL	, ' ', upper), "%s", "Out of memory?");
 	gpk_necall(::gpk::split(item.Text	, ' ', upper), "%s", "Out of memory?");
-	for(uint32_t iAddr = 0; iAddr < item.Addresses.size(); ++iAddr)
-		gpk_necall(::gpk::split(item.Addresses[iAddr], ' ', upper), "%s", "Out of memory?");
-	for(uint32_t iAddr = 0; iAddr < item.Phones.size(); ++iAddr)
-		gpk_necall(::gpk::split(item.Phones[iAddr], ' ', upper), "%s", "Out of memory?");
-	for(uint32_t iAddr = 0; iAddr < item.WPs.size(); ++iAddr)
-		gpk_necall(::gpk::split(item.WPs[iAddr], ' ', upper), "%s", "Out of memory?");
+	for(uint32_t iAddr = 0; iAddr < item.Addresses	.size(); ++iAddr) gpk_necall(::gpk::split(item.Addresses[iAddr], ' ', upper), "%s", "Out of memory?");
+	for(uint32_t iAddr = 0; iAddr < item.Phones		.size(); ++iAddr) gpk_necall(::gpk::split(item.Phones	[iAddr], ' ', upper), "%s", "Out of memory?");
+	for(uint32_t iAddr = 0; iAddr < item.WPs		.size(); ++iAddr) gpk_necall(::gpk::split(item.WPs		[iAddr], ' ', upper), "%s", "Out of memory?");
 
-	gpk_necall(itemWords.resize(upper.size())	, "%s", "Out of memory?");
+	gpk_necall(itemWords.resize(upper.size()), "%s", "Out of memory?");
 	const ::gpk::TKeyValConstString							replaceDict	[]						=
 		{ ::gpk::TKeyValConstString{"áéíóúàèìòùäëïöüãõñçºª", "aeiouaeiouaeiouaoncoa"}
 		};
@@ -155,6 +125,108 @@ static	::gpk::error_t								getWordDict							(const ::SItemViews& item, uint32
 	}
 	return 0;
 }
+
+static	::gpk::error_t								outputSearchScript					(const ::gpk::view_array<::SItemViews> & indicesToDisplay, ::gpk::array_pod<char_t> & output) {
+	::gpk::array_obj<::SWordIndices>						wordSet;
+	::gpk::array_obj<::gpk::array_pod<char_t>>				cacheItemWords;
+
+	for(uint32_t iItem = 0, countItems = indicesToDisplay.size(); iItem < countItems; ++iItem)
+		::getWordDict(indicesToDisplay[iItem], iItem, wordSet, cacheItemWords);
+
+	output.append(::gpk::view_const_string{"\n<script charset=\"iso-8859-1\">"});
+	output.append(::gpk::view_const_string{"\nvar names = ["});
+	for(uint32_t iWord = 0, countWords = wordSet.size(); iWord < countWords; ++iWord) {
+		const SWordIndices										& element							= wordSet[iWord];
+		info_printf("Word: %s.", element.Text.begin());
+		if(0 <= ::gpk::find('\'', ::gpk::view_array{element.Text.begin(), element.Text.size()})) {
+			if(0 <= ::gpk::find('"', ::gpk::view_array{element.Text.begin(), element.Text.size()}))
+				continue;
+			output.append(::gpk::view_const_string{"\""});
+			output.append(element.Text);
+			output.append(::gpk::view_const_string{"\""});
+		}
+		else {
+			output.append(::gpk::view_const_string{" '"});
+			output.append(element.Text);
+			output.append(::gpk::view_const_string{"'"});
+		}
+		if(iWord < (wordSet.size() - 1))
+			output.append(::gpk::view_const_string{","});
+	}
+	output.append(::gpk::view_const_string{"];"});
+
+	output.append(::gpk::view_const_string{"\nvar indices = ["});
+	::gpk::array_pod<char_t>								base64Id;
+	char													tempIntStr[256]				= {};
+	for(uint32_t iWord = 0; iWord < wordSet.size(); ++iWord) {
+		const SWordIndices		& element = wordSet[iWord];
+		output.append(::gpk::view_const_string{"["});
+		for(uint32_t iArticle = 0; iArticle < element.Indices.size(); ++iArticle) {
+			base64Id.clear();
+			sprintf_s(tempIntStr, "%u", element.Indices[iArticle]);
+			::gpk::base64EncodeFS(::gpk::view_const_string{tempIntStr}, base64Id);
+
+			output.append(::gpk::view_const_string{"'"});
+			output.append(::gpk::view_const_string{base64Id.begin(), base64Id.size()});
+			output.append(::gpk::view_const_string{"'"});
+			if(iArticle < (element.Indices.size() - 1))
+				output.append(::gpk::view_const_string{","});
+		}
+		output.append(::gpk::view_const_string{"]"});
+		if(iWord < (wordSet.size() - 1))
+			output.append(::gpk::view_const_string{","});
+	}
+	output.append(::gpk::view_const_string{"];"});
+
+	output.append(::gpk::view_const_string{"\nvar idList = ["});
+	for(uint32_t iArticle = 0; iArticle < indicesToDisplay.size(); ++iArticle) {
+		base64Id.clear();
+		sprintf_s(tempIntStr, "%u", iArticle);
+		::gpk::base64EncodeFS(::gpk::view_const_string{tempIntStr}, base64Id);
+		output.append(::gpk::view_const_string{"'"});
+		output.append(::gpk::view_const_string{base64Id.begin(), base64Id.size()});
+		output.append(::gpk::view_const_string{"'"});
+		if(iArticle < (indicesToDisplay.size() - 1))
+			output.append(::gpk::view_const_string{","});
+	}
+	output.append(::gpk::view_const_string{"];"});
+	output.append(jsSearch);
+	output.append(::gpk::view_const_string{"\n</script>"});
+	return 0;
+}
+
+::gpk::error_t								ntl::pageCatalog					(const ::gpk::view_const_string & contentFileName, const ::gpk::SCoord2<uint32_t> screenSize, const ::gpk::view_const_string & pathStyles, const AD_SHOP_CATEGORY category, const ::gpk::view_const_string & title, const ::gpk::view_const_string & lang, ::gpk::array_pod<char_t> & output) {
+
+	output.append(::gpk::view_const_string{ "\n<html>"});
+	output.append(::gpk::view_const_string{ "\n<head>"});
+	output.append(::gpk::view_const_string{ "\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=iso-8859-1\" />"});
+
+	::gpk::array_pod<char_t>								fileStyle			;
+	::ntl::httpPath(pathStyles, "blankstyle", "css"	, fileStyle);
+	::ntl::htmlHeaderTitle		(title, output);
+	::ntl::htmlHeaderStyleLink	({fileStyle.begin(), fileStyle.size()}, output);
+	output.append(::gpk::view_const_string{"\n</head>"});
+
+	output.append(::gpk::view_const_string{
+		"\n<body style=\"width:100%;height:100%;background-color:#E0E0E0;font-family:Arial;\">"
+		"\n<table style=\"width:100%;height:100%;text-align:center;\">"
+		"\n<tr style=\"\" >"
+		"\n<td style=\"font-size:16px; font-weight:bold; vertical-align:top;\">"
+		});
+
+	::ntl::htmlBoardGenerate(contentFileName, screenSize, category, title, lang, output);
+
+	output.append(::gpk::view_const_string{
+		"\n</td>"
+		"\n</tr>"
+		"\n</table>"
+		"\n</body>"
+		});
+
+	output.append(::gpk::view_const_string{"\n</html>"	});
+	return 0;
+}
+
 
 ::gpk::error_t										ntl::htmlBoardGenerate				(const ::gpk::view_const_string & contentFileName, const ::gpk::SCoord2<uint32_t> screenSize, const ::ntl::AD_SHOP_CATEGORY category, const ::gpk::view_const_string & title, const ::gpk::view_const_string & lang, ::gpk::array_pod<char_t> & output)	{
 	//---------------------
@@ -327,7 +399,6 @@ static	::gpk::error_t								getWordDict							(const ::SItemViews& item, uint32
 						::gpk::view_const_string								textPhone						= views.Phones[iPhone];
 						output.append(textPhone);
 						output.append(::gpk::view_const_string{"\n<br />"});
-
 					}
 					for(uint32_t iPhone = 0, countWPs	 = views.WPs	.size(); iPhone < countWPs		; ++iPhone) {
 						::gpk::view_const_string								textPhone						= views.WPs[iPhone];
@@ -337,7 +408,6 @@ static	::gpk::error_t								getWordDict							(const ::SItemViews& item, uint32
 						output.append(textPhone);
 						output.append(::gpk::view_const_string{"</a>"});
 						output.append(::gpk::view_const_string{"<br />"});
-						// https://wa.me/15551234567
 					}
 
 					//
@@ -356,73 +426,10 @@ static	::gpk::error_t								getWordDict							(const ::SItemViews& item, uint32
 	}
 	output.append(::gpk::view_const_string{"\n</table>"});
 
-	::gpk::array_obj<::SWordIndices>							wordSet;
-	::gpk::array_obj<::gpk::array_pod<char_t>>					cacheItemWords;
-
-	for(uint32_t iItem = 0, countItems = indicesToDisplay.size(); iItem < countItems; ++iItem)
-		::getWordDict(indicesToDisplay[iItem], iItem, wordSet, cacheItemWords);
-
-	output.append(::gpk::view_const_string{"\n<script charset=\"iso-8859-1\">"});
-	output.append(::gpk::view_const_string{"\nvar names = ["});
-	for(uint32_t iWord = 0, countWords = wordSet.size(); iWord < countWords; ++iWord) {
-		const SWordIndices				& element			= wordSet[iWord];
-		info_printf("Word: %s.", element.Text.begin());
-		if(0 <= ::gpk::find('\'', ::gpk::view_array{element.Text.begin(), element.Text.size()})) {
-			if(0 <= ::gpk::find('"', ::gpk::view_array{element.Text.begin(), element.Text.size()}))
-				continue;
-			output.append(::gpk::view_const_string{"\""});
-			output.append(element.Text);
-			output.append(::gpk::view_const_string{"\""});
-		}
-		else {
-			output.append(::gpk::view_const_string{" '"});
-			output.append(element.Text);
-			output.append(::gpk::view_const_string{"'"});
-		}
-		if(iWord < (wordSet.size() - 1))
-			output.append(::gpk::view_const_string{","});
-	}
-	output.append(::gpk::view_const_string{"];"});
-
-	output.append(::gpk::view_const_string{"\nvar indices = ["});
-	for(uint32_t iWord = 0; iWord < wordSet.size(); ++iWord) {
-		const SWordIndices		& element = wordSet[iWord];
-		output.append(::gpk::view_const_string{"["});
-		for(uint32_t iArticle = 0; iArticle < element.Indices.size(); ++iArticle) {
-			base64Id.clear();
-			sprintf_s(tempIntStr, "%u", element.Indices[iArticle]);
-			::gpk::base64EncodeFS(::gpk::view_const_string{tempIntStr}, base64Id);
-
-			output.append(::gpk::view_const_string{"'"});
-			output.append(::gpk::view_const_string{base64Id.begin(), base64Id.size()});
-			output.append(::gpk::view_const_string{"'"});
-			if(iArticle < (element.Indices.size() - 1))
-				output.append(::gpk::view_const_string{","});
-		}
-		output.append(::gpk::view_const_string{"]"});
-		if(iWord < (wordSet.size() - 1))
-			output.append(::gpk::view_const_string{","});
-	}
-	output.append(::gpk::view_const_string{"];"});
-
-	output.append(::gpk::view_const_string{"\nvar idList = ["});
-	for(uint32_t iArticle = 0; iArticle < indicesToDisplay.size(); ++iArticle) {
-		base64Id.clear();
-		sprintf_s(tempIntStr, "%u", iArticle);
-		::gpk::base64EncodeFS(::gpk::view_const_string{tempIntStr}, base64Id);
-		output.append(::gpk::view_const_string{"'"});
-		output.append(::gpk::view_const_string{base64Id.begin(), base64Id.size()});
-		output.append(::gpk::view_const_string{"'"});
-		if(iArticle < (indicesToDisplay.size() - 1))
-			output.append(::gpk::view_const_string{","});
-	}
-	output.append(::gpk::view_const_string{"];"});
-	output.append(jsSearch);
-	output.append(::gpk::view_const_string{"\n</script>"});
+	::outputSearchScript(indicesToDisplay, output);
 
 	output.append(::gpk::view_const_string{"\n</td>"});
 	output.append(::gpk::view_const_string{"\n</tr>"});
-
 	output.append(::gpk::view_const_string{"\n</table>"});
 	return 0;
 }
