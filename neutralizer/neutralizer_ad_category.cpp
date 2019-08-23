@@ -7,6 +7,35 @@
 #include "gpk_find.h"
 #include "gpk_stdstring.h"
 
+static const ::gpk::view_const_string		jsSearch							=
+	"\nfunction obeSearch(textToFind) {"
+	"\n var lowerToFind		= textToFind.toLowerCase();"
+	"\n	var wordsToFind		= lowerToFind.split(' ');"
+	"\n	var pos				= 0;"
+	"\n	for(pos = 0; pos < idList.length; pos = pos +1) {"
+	"\n		document.getElementById(idList[pos]).style.visibility = 'collapse';"
+	"\n	}"
+	"\n	for(pos = 0; pos < names.length; pos = pos +1) {"
+	"\n		for(toFind of wordsToFind) {"
+	"\n			if(' ' === toFind || '' === toFind)	"
+	"\n				continue;		"
+	"\n			if(names[pos].indexOf(toFind) > -1) {"
+	"\n				var idc = 0;"
+	"\n				for(idc = 0; idc < indices[pos].length; idc++) {"
+	"\n					document.getElementById(indices[pos][idc]).style.visibility = 'visible';"
+	"\n				}"
+	"\n			}"
+	"\n		}"
+	"\n	}"
+	"\n}"
+	"\nfunction clearSearch() {"
+	"\n	var pos = 0;"
+	"\n	for(pos = 0; pos < idList.length; pos = pos +1) {"
+	"\n		document.getElementById(idList[pos]).style.visibility = 'visible';"
+	"\n	}"
+	"\n}"
+	;
+
 ::gpk::error_t								ntl::pageCatalog					(const ::gpk::view_const_string & contentFileName, const ::gpk::SCoord2<uint32_t> screenSize, const ::gpk::view_const_string & pathStyles, const AD_SHOP_CATEGORY category, const ::gpk::view_const_string & title, const ::gpk::view_const_string & lang, ::gpk::array_pod<char_t> & output) {
 
 	output.append(::gpk::view_const_string{ "\n<html>"});
@@ -259,14 +288,13 @@ static	::gpk::error_t								getWordDict							(const ::SItemViews& item, uint32
 			output.append(views.ImageSrc);
 			output.append(::gpk::view_const_string{ "\" ></a>"});
 			output.append(::gpk::view_const_string{"\n</td>"});
-			output.append(::gpk::view_const_string{"\n</tr>"});
-			output.append(::gpk::view_const_string{ "\n<tr>"});
+			output.append(::gpk::view_const_string{"\n</tr><tr>"});
 			output.append(::gpk::view_const_string{ "\n<td style=\"background-color:lightgrey;font-size:32px;vertical-align:top;\">"});
 
 			// ----- Image info table
 				output.append(::gpk::view_const_string{ "\n<table style=\"width:100%;height:100%;text-align:center;border-style:solid;border-width:2px;border-radius:16px;\" >"});
-				output.append(::gpk::view_const_string{ "\n<tr>"});
 				if(views.MapURL.size()) {
+					output.append(::gpk::view_const_string{ "\n<tr>"});
 					output.append(::gpk::view_const_string{ "\n<td style=\"background-color:lightgrey;text-align:center;font-size:32px;vertical-align:top;\">"});
 					output.append(::gpk::view_const_string{"\n<a target=\"blank\" style=\"margin:4px;font-size:24px;\" href=\""});
 					output.append(views.MapURL);
@@ -279,41 +307,43 @@ static	::gpk::error_t								getWordDict							(const ::SItemViews& item, uint32
 					output.append(::gpk::view_const_string{"\n</td>"});
 					output.append(::gpk::view_const_string{"\n</tr>"});
 				}
-				output.append(::gpk::view_const_string{ "\n<tr style=\"height:100%;\">"});
-				output.append(::gpk::view_const_string{ "\n<td style=\"background-color:lightgrey;text-align:center;font-size:24px;vertical-align:top;border-style:solid;border-top-width:1px;\">"});
 				// ----- Addresses
-				for(uint32_t iPhone = 0, countAddr = views.Addresses.size(); iPhone < countAddr; ++iPhone) {
-					output.append(views.Addresses[iPhone]);
-					output.append(::gpk::view_const_string{"\n<br />"});
+				if(views.Addresses.size()) {
+					output.append(::gpk::view_const_string{ "\n<tr style=\"height:100%;\">"});
+					output.append(::gpk::view_const_string{ "\n<td style=\"background-color:lightgrey;text-align:center;font-size:24px;vertical-align:top;border-style:solid;border-top-width:1px;\">"});
+					for(uint32_t iPhone = 0, countAddr = views.Addresses.size(); iPhone < countAddr; ++iPhone) {
+						output.append(views.Addresses[iPhone]);
+						output.append(::gpk::view_const_string{"\n<br />"});
+					}
+					output.append(::gpk::view_const_string{"\n</td>"});
+					output.append(::gpk::view_const_string{"\n</tr>"});
 				}
-
-				output.append(::gpk::view_const_string{"\n</td>"});
-				output.append(::gpk::view_const_string{"\n</tr>"});
 
 				// ----- Phones
-				output.append(::gpk::view_const_string{ "\n<tr style=\"height:100%;\">"});
-				output.append(::gpk::view_const_string{ "\n<td style=\"background-color:lightgrey;text-align:center;font-size:24px;vertical-align:top;border-style:solid;border-top-width:1px;\">"});
+				if(views.Phones.size() || views.WPs.size()) {
+					output.append(::gpk::view_const_string{ "\n<tr style=\"height:100%;\">"});
+					output.append(::gpk::view_const_string{ "\n<td style=\"background-color:lightgrey;text-align:center;font-size:24px;vertical-align:top;border-style:solid;border-top-width:1px;\">"});
+					for(uint32_t iPhone = 0, countPhones = views.Phones.size(); iPhone < countPhones; ++iPhone) {
+						::gpk::view_const_string								textPhone						= views.Phones[iPhone];
+						output.append(textPhone);
+						output.append(::gpk::view_const_string{"\n<br />"});
 
-				for(uint32_t iPhone = 0, countPhones = views.Phones.size(); iPhone < countPhones; ++iPhone) {
-					::gpk::view_const_string								textPhone						= views.Phones[iPhone];
-					output.append(textPhone);
-					output.append(::gpk::view_const_string{"\n<br />"});
+					}
+					for(uint32_t iPhone = 0, countWPs	 = views.WPs	.size(); iPhone < countWPs		; ++iPhone) {
+						::gpk::view_const_string								textPhone						= views.WPs[iPhone];
+						output.append(::gpk::view_const_string{"\n<a target=\"blank\" href=\"https://wa.me/"});
+						output.append(textPhone);
+						output.append(::gpk::view_const_string{"\" >"});
+						output.append(textPhone);
+						output.append(::gpk::view_const_string{"</a>"});
+						output.append(::gpk::view_const_string{"<br />"});
+						// https://wa.me/15551234567
+					}
 
+					//
+					output.append(::gpk::view_const_string{"\n</td>"});
+					output.append(::gpk::view_const_string{"\n</tr>"});
 				}
-				for(uint32_t iPhone = 0, countWPs	 = views.WPs	.size(); iPhone < countWPs		; ++iPhone) {
-					::gpk::view_const_string								textPhone						= views.WPs[iPhone];
-					output.append(::gpk::view_const_string{"\n<a target=\"blank\" href=\"https://wa.me/"});
-					output.append(textPhone);
-					output.append(::gpk::view_const_string{"\" >"});
-					output.append(textPhone);
-					output.append(::gpk::view_const_string{"</a>"});
-					output.append(::gpk::view_const_string{"<br />"});
-					// https://wa.me/15551234567
-				}
-
-				//
-				output.append(::gpk::view_const_string{"\n</td>"});
-				output.append(::gpk::view_const_string{"\n</tr>"});
 				output.append(::gpk::view_const_string{"\n</table>"});
 
 			output.append(::gpk::view_const_string{"\n</td>"});
@@ -387,36 +417,7 @@ static	::gpk::error_t								getWordDict							(const ::SItemViews& item, uint32
 			output.append(::gpk::view_const_string{","});
 	}
 	output.append(::gpk::view_const_string{"];"});
-
-	output.append(::gpk::view_const_string{"\nfunction obeSearch(textToFind) {"});
-	output.append(::gpk::view_const_string{
-		"\n var lowerToFind		= textToFind.toLowerCase();"
-		"\n	var wordsToFind		= lowerToFind.split(' ');"
-		"\n	var pos				= 0;"
-		"\n	for(pos = 0; pos < idList.length; pos = pos +1) {"
-		"\n		document.getElementById(idList[pos]).style.visibility = 'collapse';"
-		"\n	}"
-		"\n	for(pos = 0; pos < names.length; pos = pos +1) {"
-		"\n		for(toFind of wordsToFind) {"
-		"\n			if(' ' === toFind || '' === toFind)	"
-		"\n				continue;		"
-		"\n			if(names[pos].indexOf(toFind) > -1) {"
-		"\n				var idc = 0;"
-		"\n				for(idc = 0; idc < indices[pos].length; idc++) {"
-		"\n					document.getElementById(indices[pos][idc]).style.visibility = 'visible';"
-		"\n				}"
-		"\n			}"
-		"\n		}"
-		"\n	}"
-		});
-	output.append(::gpk::view_const_string{"\n}"});
-	output.append(::gpk::view_const_string{"\nfunction clearSearch() {"});
-	output.append(::gpk::view_const_string{"\n	var pos = 0;"
-		"\n	for(pos = 0; pos < idList.length; pos = pos +1) {"
-		"\n		document.getElementById(idList[pos]).style.visibility = 'visible';"
-		"\n	}"
-		});
-	output.append(::gpk::view_const_string{"\n}"});
+	output.append(jsSearch);
 	output.append(::gpk::view_const_string{"\n</script>"});
 
 	output.append(::gpk::view_const_string{"\n</td>"});
