@@ -51,7 +51,7 @@ struct SItemViews {
 };
 
 static	::gpk::error_t								getWordList							(const SItemViews& item, ::gpk::array_obj<::gpk::array_pod<char_t>> & itemWords) {
-	::gpk::array_obj<::gpk::view_const_string>				upper;
+	::gpk::array_obj<::gpk::view_const_string>				upper								= {};
 	gpk_necall(::gpk::split(item.Text	, ' ', upper), "%s", "Out of memory?");
 	gpk_necall(::gpk::split(item.Title	, ' ', upper), "%s", "Out of memory?");
 	gpk_necall(::gpk::split(item.URL	, ' ', upper), "%s", "Out of memory?");
@@ -64,28 +64,25 @@ static	::gpk::error_t								getWordList							(const SItemViews& item, ::gpk::a
 		gpk_necall(::gpk::split(item.WPs[iAddr], ' ', upper), "%s", "Out of memory?");
 
 	gpk_necall(itemWords.resize(upper.size())	, "%s", "Out of memory?");
-	const ::gpk::TKeyValConstString								replaceDict	[]					=
-		{ ::gpk::TKeyValConstString{"áéíóú", "aeiou"}
-		, ::gpk::TKeyValConstString{"àèìòù", "aeiou"}
-		, ::gpk::TKeyValConstString{"äëïöü", "aeiou"}
-		, ::gpk::TKeyValConstString{"ãõñçºª", "aoncoa"}
+	const ::gpk::TKeyValConstString							replaceDict	[]						=
+		{ ::gpk::TKeyValConstString{"áéíóúàèìòùäëïöüãõñçºª", "aeiouaeiouaeiouaoncoa"}
 		};
-	::gpk::array_pod<char_t>	fixedWord;
+	::gpk::array_pod<char_t>								fixedWord;
 	for(uint32_t iWord = 0, countWords = upper.size(); iWord < countWords; ++iWord) {
 		::gpk::array_pod<char_t> & finalWord = itemWords[iWord];
 		finalWord.resize(upper[iWord].size());
 		memcpy(finalWord.begin(), upper[iWord].begin(), upper[iWord].size());
 		::gpk::tolower(finalWord);
-		fixedWord				= finalWord;
-		bool						replaced		= false;
+		fixedWord											= finalWord;
+		bool													replaced		= false;
 		for(uint32_t iChar = 0; iChar < fixedWord.size(); ++iChar) {
-			char					& wordChar		= fixedWord[iChar];
-			for(uint32_t iTable=0; iTable < ::gpk::size(replaceDict); ++iTable) {
+			char													& wordChar		= fixedWord[iChar];
+			for(uint32_t iTable = 0; iTable < ::gpk::size(replaceDict); ++iTable) {
 				const ::gpk::TKeyValConstString &	table = replaceDict[iTable];
-				for(uint32_t iItem=0; iItem < table.Key.size(); ++iItem)
+				for(uint32_t iItem = 0; iItem < table.Key.size(); ++iItem)
 					if(wordChar == table.Key[iItem]) {
-						wordChar = table.Val[iItem];
-						replaced = true;
+						wordChar											= table.Val[iItem];
+						replaced											= true;
 					}
 			}
 		}
@@ -94,6 +91,38 @@ static	::gpk::error_t								getWordList							(const SItemViews& item, ::gpk::a
 			info_printf("fixedWord: %s.", fixedWord.begin());
 		}
 		info_printf("finalWord: %s.", finalWord.begin());
+	}
+	return 0;
+}
+
+struct SWordIndices {
+	::gpk::array_pod<char_t>							Text;
+	::gpk::array_pod<uint32_t>							Indices;
+};
+
+static	::gpk::error_t								getWordDict							(const ::SItemViews& item, uint32_t iItem, ::gpk::array_obj<::SWordIndices> & wordSet, ::gpk::array_obj<::gpk::array_pod<char_t>> & cacheItemWords) {
+	::getWordList(item, cacheItemWords);
+	for(uint32_t iItemWord = 0; iItemWord < cacheItemWords.size(); ++iItemWord) {
+		::gpk::view_const_string								itemWord						= {cacheItemWords[iItemWord].begin(), cacheItemWords[iItemWord].size()};
+		info_printf("itemWord: %s.", itemWord.begin());
+		if(1 >= itemWord.size())
+			continue;
+		bool													bFound							= false;
+		if(',' == itemWord[itemWord.size() - 1] || '.' == itemWord[itemWord.size() - 1]) {
+			itemWord											= {itemWord.begin(), itemWord.size() - 1};
+			if(0 >= itemWord.size())
+				continue;
+		}
+		for(uint32_t iWordInSet = 0; iWordInSet < wordSet.size(); ++iWordInSet) {
+			SWordIndices											& dictWord						= wordSet[iWordInSet];
+			if(itemWord != dictWord.Text)
+				continue;
+			bFound												= true;
+			if(0 > ::gpk::find(iItem, {dictWord.Indices.begin(), dictWord.Indices.size()}))
+				dictWord.Indices.push_back(iItem);
+		}
+		if(false == bFound)
+			wordSet[wordSet.push_back({itemWord})].Indices.push_back(iItem);
 	}
 	return 0;
 }
@@ -137,24 +166,9 @@ static	::gpk::error_t								getWordList							(const SItemViews& item, ::gpk::a
 		const ::gpk::error_t									jsonIndexImageTitle				= ::gpk::jsonExpressionResolve("image.title", config.Reader, jsonIndexLang, views.ImageTitle		);
 		const ::gpk::error_t									jsonIndexImageAlt				= ::gpk::jsonExpressionResolve("image.alt"	, config.Reader, jsonIndexLang, views.ImageAlt			);
 
-		const ::gpk::error_t									countPhones						= ::gpk::jsonArraySize(*config.Reader[jsonIndexArrayPhone	]);
-		const ::gpk::error_t									countWPs						= ::gpk::jsonArraySize(*config.Reader[jsonIndexArrayWP		]);
-		const ::gpk::error_t									countAddr						= ::gpk::jsonArraySize(*config.Reader[jsonIndexArrayAddr]);
-
-		for(int32_t iPhone = 0; iPhone < countAddr; ++iPhone) {
-			::gpk::view_const_string								textPhone						= config.Reader.View[::gpk::jsonArrayValueGet(*config.Reader[jsonIndexArrayAddr], iPhone)];
-			views.Addresses.push_back(textPhone);
-		}
-
-		for(int32_t iPhone = 0; iPhone < countPhones	; ++iPhone) {
-			::gpk::view_const_string								textPhone						= config.Reader.View[::gpk::jsonArrayValueGet(*config.Reader[jsonIndexArrayPhone], iPhone)];
-			views.Phones.push_back(textPhone);
-		}
-
-		for(int32_t iPhone = 0; iPhone < countWPs		; ++iPhone) {
-			::gpk::view_const_string								textPhone						= config.Reader.View[::gpk::jsonArrayValueGet(*config.Reader[jsonIndexArrayWP], iPhone)];
-			views.WPs.push_back(textPhone);
-		}
+		for(int32_t iPhone = 0, countAddr	= ::gpk::jsonArraySize(*config.Reader[jsonIndexArrayAddr	]); iPhone < countAddr	; ++iPhone)	views.Addresses	.push_back(config.Reader.View[::gpk::jsonArrayValueGet(*config.Reader[jsonIndexArrayAddr	], iPhone)]);
+		for(int32_t iPhone = 0, countPhones	= ::gpk::jsonArraySize(*config.Reader[jsonIndexArrayPhone	]); iPhone < countPhones; ++iPhone)	views.Phones	.push_back(config.Reader.View[::gpk::jsonArrayValueGet(*config.Reader[jsonIndexArrayPhone	], iPhone)]);
+		for(int32_t iPhone = 0, countWPs	= ::gpk::jsonArraySize(*config.Reader[jsonIndexArrayWP		]); iPhone < countWPs	; ++iPhone)	views.WPs		.push_back(config.Reader.View[::gpk::jsonArrayValueGet(*config.Reader[jsonIndexArrayWP		], iPhone)]);
 
 		gpk_necall(indicesToDisplay.push_back(views), "%s", "Out of memory?");
 	}
@@ -163,40 +177,6 @@ static	::gpk::error_t								getWordList							(const SItemViews& item, ::gpk::a
 		sprintf_s(fontSize, "%u", screenSize.x ? screenSize.x / 45 : 24);
 	else
 		sprintf_s(fontSize, "%u", screenSize.y ? screenSize.y / 34 : 24);
-
-	struct SWordIndices {
-		::gpk::array_pod<char_t>		Text;
-		::gpk::array_pod<uint32_t>		Indices;
-	};
-
-	::gpk::array_obj<SWordIndices>								wordSet;
-	for(uint32_t iItem = 0, countItems = indicesToDisplay.size(); iItem < countItems; ++iItem) {
-		::gpk::array_obj<::gpk::array_pod<char_t>>					itemWords;
-		::getWordList(indicesToDisplay[iItem], itemWords);
-
-		for(uint32_t iItemWord = 0; iItemWord < itemWords.size(); ++iItemWord) {
-			::gpk::view_const_string								itemWord						= {itemWords[iItemWord].begin(), itemWords[iItemWord].size()};
-			info_printf("itemWord: %s.", itemWord.begin());
-			if(1 >= itemWord.size())
-				continue;
-			bool													bFound							= false;
-			if(',' == itemWord[itemWord.size() - 1] || '.' == itemWord[itemWord.size() - 1]) {
-				itemWord											= {itemWord.begin(), itemWord.size() - 1};
-				if(0 >= itemWord.size())
-					continue;
-			}
-			for(uint32_t iWordInSet = 0; iWordInSet < wordSet.size(); ++iWordInSet) {
-				SWordIndices											& dictWord						= wordSet[iWordInSet];
-				if(itemWord != dictWord.Text)
-					continue;
-				bFound												= true;
-				if(0 > ::gpk::find(iItem, {dictWord.Indices.begin(), dictWord.Indices.size()}))
-					dictWord.Indices.push_back(iItem);
-			}
-			if(false == bFound)
-				wordSet[wordSet.push_back({itemWord})].Indices.push_back(iItem);
-		}
-	}
 
 	output.append(::gpk::view_const_string{"\n<div style=\"background-color:#ffffff;position:sticky;left:0;top:0;\">"});
 	output.append(::gpk::view_const_string{ "\n<table style=\"left:0px;top:0px;position:sticky;width:100%;height:100%;text-align:center;\">"});
@@ -346,6 +326,12 @@ static	::gpk::error_t								getWordList							(const SItemViews& item, ::gpk::a
 	}
 	output.append(::gpk::view_const_string{"\n</table>"});
 
+	::gpk::array_obj<::SWordIndices>							wordSet;
+	::gpk::array_obj<::gpk::array_pod<char_t>>					cacheItemWords;
+
+	for(uint32_t iItem = 0, countItems = indicesToDisplay.size(); iItem < countItems; ++iItem)
+		::getWordDict(indicesToDisplay[iItem], iItem, wordSet, cacheItemWords);
+
 	output.append(::gpk::view_const_string{"\n<script charset=\"iso-8859-1\">"});
 	output.append(::gpk::view_const_string{"\nvar names = ["});
 	for(uint32_t iWord = 0, countWords = wordSet.size(); iWord < countWords; ++iWord) {
@@ -412,6 +398,8 @@ static	::gpk::error_t								getWordList							(const SItemViews& item, ::gpk::a
 		"\n	}"
 		"\n	for(pos = 0; pos < names.length; pos = pos +1) {"
 		"\n		for(toFind of wordsToFind) {"
+		"\n			if(' ' === toFind || '' === toFind)	"
+		"\n				continue;		"
 		"\n			if(names[pos].indexOf(toFind) > -1) {"
 		"\n				var idc = 0;"
 		"\n				for(idc = 0; idc < indices[pos].length; idc++) {"
