@@ -126,36 +126,35 @@ static	::gpk::error_t								getWordDict							(const ::SItemViews& item, uint32
 	return 0;
 }
 
-static	::gpk::error_t								outputSearchScript					(const ::gpk::view_array<::SItemViews> & indicesToDisplay, ::gpk::array_pod<char_t> & output) {
+static	::gpk::error_t								outputSearchScript					(const ::gpk::view_array<const ::SItemViews> & indicesToDisplay, ::gpk::array_pod<char_t> & output) {
 	::gpk::array_obj<::SWordIndices>						wordSet;
 	::gpk::array_obj<::gpk::array_pod<char_t>>				cacheItemWords;
 
 	for(uint32_t iItem = 0, countItems = indicesToDisplay.size(); iItem < countItems; ++iItem)
 		::getWordDict(indicesToDisplay[iItem], iItem, wordSet, cacheItemWords);
 
-	output.append(::gpk::view_const_string{"\n<script charset=\"iso-8859-1\">"});
-	output.append(::gpk::view_const_string{"\nvar names = ["});
+	output.append(::gpk::view_const_string{"\nvar names=["});
 	for(uint32_t iWord = 0, countWords = wordSet.size(); iWord < countWords; ++iWord) {
 		const SWordIndices										& element							= wordSet[iWord];
 		info_printf("Word: %s.", element.Text.begin());
 		if(0 <= ::gpk::find('\'', ::gpk::view_array{element.Text.begin(), element.Text.size()})) {
 			if(0 <= ::gpk::find('"', ::gpk::view_array{element.Text.begin(), element.Text.size()}))
 				continue;
-			output.append(::gpk::view_const_string{"\""});
+			output.push_back('"');
 			output.append(element.Text);
-			output.append(::gpk::view_const_string{"\""});
+			output.push_back('"');
 		}
 		else {
-			output.append(::gpk::view_const_string{" '"});
+			output.push_back('\'');
 			output.append(element.Text);
-			output.append(::gpk::view_const_string{"'"});
+			output.push_back('\'');
 		}
 		if(iWord < (wordSet.size() - 1))
 			output.append(::gpk::view_const_string{","});
 	}
 	output.append(::gpk::view_const_string{"];"});
 
-	output.append(::gpk::view_const_string{"\nvar indices = ["});
+	output.append(::gpk::view_const_string{"\nvar indices=["});
 	::gpk::array_pod<char_t>								base64Id;
 	char													tempIntStr[256]				= {};
 	for(uint32_t iWord = 0; iWord < wordSet.size(); ++iWord) {
@@ -178,7 +177,7 @@ static	::gpk::error_t								outputSearchScript					(const ::gpk::view_array<::S
 	}
 	output.append(::gpk::view_const_string{"];"});
 
-	output.append(::gpk::view_const_string{"\nvar idList = ["});
+	output.append(::gpk::view_const_string{"\nvar idList=["});
 	for(uint32_t iArticle = 0; iArticle < indicesToDisplay.size(); ++iArticle) {
 		base64Id.clear();
 		sprintf_s(tempIntStr, "%u", iArticle);
@@ -191,57 +190,19 @@ static	::gpk::error_t								outputSearchScript					(const ::gpk::view_array<::S
 	}
 	output.append(::gpk::view_const_string{"];"});
 	output.append(jsSearch);
-	output.append(::gpk::view_const_string{"\n</script>"});
 	return 0;
 }
 
-::gpk::error_t								ntl::pageCatalog					(const ::gpk::view_const_string & contentFileName, const ::gpk::SCoord2<uint32_t> screenSize, const ::gpk::view_const_string & pathStyles, const AD_SHOP_CATEGORY category, const ::gpk::view_const_string & title, const ::gpk::view_const_string & lang, ::gpk::array_pod<char_t> & output) {
-
-	output.append(::gpk::view_const_string{ "\n<html>"});
-	output.append(::gpk::view_const_string{ "\n<head>"});
-	output.append(::gpk::view_const_string{ "\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=iso-8859-1\" />"});
-
-	::gpk::array_pod<char_t>								fileStyle			;
-	::ntl::httpPath(pathStyles, "blankstyle", "css"	, fileStyle);
-	::ntl::htmlHeaderTitle		(title, output);
-	::ntl::htmlHeaderStyleLink	({fileStyle.begin(), fileStyle.size()}, output);
-	output.append(::gpk::view_const_string{"\n</head>"});
-
-	output.append(::gpk::view_const_string{
-		"\n<body style=\"width:100%;height:100%;background-color:#E0E0E0;font-family:Arial;\">"
-		"\n<table style=\"width:100%;height:100%;text-align:center;\">"
-		"\n<tr style=\"\" >"
-		"\n<td style=\"font-size:16px; font-weight:bold; vertical-align:top;\">"
-		});
-
-	::ntl::htmlBoardGenerate(contentFileName, screenSize, category, title, lang, output);
-
-	output.append(::gpk::view_const_string{
-		"\n</td>"
-		"\n</tr>"
-		"\n</table>"
-		"\n</body>"
-		});
-
-	output.append(::gpk::view_const_string{"\n</html>"	});
-	return 0;
-}
-
-
-::gpk::error_t										ntl::htmlBoardGenerate				(const ::gpk::view_const_string & contentFileName, const ::gpk::SCoord2<uint32_t> screenSize, const ::ntl::AD_SHOP_CATEGORY category, const ::gpk::view_const_string & title, const ::gpk::view_const_string & lang, ::gpk::array_pod<char_t> & output)	{
-	//---------------------
-	::gpk::SJSONFile										config								= {};
-	gpk_necall(::gpk::jsonFileRead(config, contentFileName), "Failed to load configuration file: %s.", contentFileName);
-	::gpk::array_obj<SItemViews>							indicesToDisplay					= {};
-	for(int32_t iItem = 0, countItems = ::gpk::jsonArraySize(*config.Reader[0]); iItem < countItems; ++iItem) {
+static	::gpk::error_t								getItemViews						(::gpk::SJSONReader & content, const ::ntl::AD_SHOP_CATEGORY category, const ::gpk::view_const_string & lang, ::gpk::array_obj<::SItemViews> & indicesToDisplay)	{
+	for(int32_t iItem = 0, countItems = ::gpk::jsonArraySize(*content[0]); iItem < countItems; ++iItem) {
 		SItemViews												views								= {(uint32_t)iItem};
-		const ::gpk::error_t									jsonIndexCurrentItem				= ::gpk::jsonArrayValueGet(*config.Reader[0], iItem);
+		const ::gpk::error_t									jsonIndexCurrentItem				= ::gpk::jsonArrayValueGet(*content[0], iItem);
 		::gpk::view_const_string								viewWikiCategory					= {};
-		const ::gpk::error_t									jsonIndexArrayCategory				= ::gpk::jsonExpressionResolve("category", config.Reader, jsonIndexCurrentItem, viewWikiCategory);
+		const ::gpk::error_t									jsonIndexArrayCategory				= ::gpk::jsonExpressionResolve("category", content, jsonIndexCurrentItem, viewWikiCategory);
 		bool													isCategory							= false;
-		for(uint32_t iCat = 0, countCat = (uint32_t)::gpk::jsonArraySize(*config.Reader[jsonIndexArrayCategory]); iCat < countCat; ++iCat) {
-			const ::gpk::error_t									jsonIndexNodeCategory				= ::gpk::jsonArrayValueGet(*config.Reader[jsonIndexArrayCategory], iCat);
-			const ::gpk::SJSONToken									& jsonToken							= config.Reader.Token[jsonIndexNodeCategory];
+		for(uint32_t iCat = 0, countCat = (uint32_t)::gpk::jsonArraySize(*content[jsonIndexArrayCategory]); iCat < countCat; ++iCat) {
+			const ::gpk::error_t									jsonIndexNodeCategory				= ::gpk::jsonArrayValueGet(*content[jsonIndexArrayCategory], iCat);
+			const ::gpk::SJSONToken									& jsonToken							= content.Token[jsonIndexNodeCategory];
 			if(category == jsonToken.Value) {
 				isCategory											= true;
 				break;
@@ -251,57 +212,64 @@ static	::gpk::error_t								outputSearchScript					(const ::gpk::view_array<::S
 			continue;
 
 		// ---- Root arrays.
-		const ::gpk::error_t									jsonIndexArrayPhone				= ::gpk::jsonExpressionResolve("phone"		, config.Reader, jsonIndexCurrentItem, views.MapURL		);
-		const ::gpk::error_t									jsonIndexArrayWP				= ::gpk::jsonExpressionResolve("whatsapp"	, config.Reader, jsonIndexCurrentItem, views.MapURL		);
-		const ::gpk::error_t									jsonIndexArrayAddr				= ::gpk::jsonExpressionResolve("address"	, config.Reader, jsonIndexCurrentItem, views.MapURL		);
+		const ::gpk::error_t									jsonIndexArrayPhone					= ::gpk::jsonExpressionResolve("phone"		, content, jsonIndexCurrentItem, views.MapURL		);
+		const ::gpk::error_t									jsonIndexArrayWP					= ::gpk::jsonExpressionResolve("whatsapp"	, content, jsonIndexCurrentItem, views.MapURL		);
+		const ::gpk::error_t									jsonIndexArrayAddr					= ::gpk::jsonExpressionResolve("address"	, content, jsonIndexCurrentItem, views.MapURL		);
 		// ---- Root properties.
-		const ::gpk::error_t									jsonIndexName					= ::gpk::jsonExpressionResolve("name"		, config.Reader, jsonIndexCurrentItem, views.Name		);
-		const ::gpk::error_t									jsonIndexMap					= ::gpk::jsonExpressionResolve("location"	, config.Reader, jsonIndexCurrentItem, views.MapURL		);
+		const ::gpk::error_t									jsonIndexName						= ::gpk::jsonExpressionResolve("name"		, content, jsonIndexCurrentItem, views.Name		);
+		const ::gpk::error_t									jsonIndexMap						= ::gpk::jsonExpressionResolve("location"	, content, jsonIndexCurrentItem, views.MapURL		);
 		// ---- Language-based properties.
-		const ::gpk::error_t									jsonIndexLang					= ::gpk::jsonExpressionResolve(lang			, config.Reader, jsonIndexCurrentItem, views.URL		);
-		const ::gpk::error_t									jsonIndexWiki					= ::gpk::jsonExpressionResolve("wiki"		, config.Reader, jsonIndexLang, views.URL				);
-		const ::gpk::error_t									jsonIndexTitle					= ::gpk::jsonExpressionResolve("title"		, config.Reader, jsonIndexLang, views.Title				);
-		const ::gpk::error_t									jsonIndexText					= ::gpk::jsonExpressionResolve("text"		, config.Reader, jsonIndexLang, views.Text				);
-		const ::gpk::error_t									jsonIndexImageHRef				= ::gpk::jsonExpressionResolve("image.href"	, config.Reader, jsonIndexLang, views.ImageHRef			);
-		const ::gpk::error_t									jsonIndexImageSrc				= ::gpk::jsonExpressionResolve("image.src"	, config.Reader, jsonIndexLang, views.ImageSrc			);
-		const ::gpk::error_t									jsonIndexImageTitle				= ::gpk::jsonExpressionResolve("image.title", config.Reader, jsonIndexLang, views.ImageTitle		);
-		const ::gpk::error_t									jsonIndexImageAlt				= ::gpk::jsonExpressionResolve("image.alt"	, config.Reader, jsonIndexLang, views.ImageAlt			);
+		const ::gpk::error_t									jsonIndexLang						= ::gpk::jsonExpressionResolve(lang			, content, jsonIndexCurrentItem, views.URL		);
+		const ::gpk::error_t									jsonIndexWiki						= ::gpk::jsonExpressionResolve("wiki"		, content, jsonIndexLang, views.URL				);
+		const ::gpk::error_t									jsonIndexTitle						= ::gpk::jsonExpressionResolve("title"		, content, jsonIndexLang, views.Title				);
+		const ::gpk::error_t									jsonIndexText						= ::gpk::jsonExpressionResolve("text"		, content, jsonIndexLang, views.Text				);
+		const ::gpk::error_t									jsonIndexImageHRef					= ::gpk::jsonExpressionResolve("image.href"	, content, jsonIndexLang, views.ImageHRef			);
+		const ::gpk::error_t									jsonIndexImageSrc					= ::gpk::jsonExpressionResolve("image.src"	, content, jsonIndexLang, views.ImageSrc			);
+		const ::gpk::error_t									jsonIndexImageTitle					= ::gpk::jsonExpressionResolve("image.title", content, jsonIndexLang, views.ImageTitle		);
+		const ::gpk::error_t									jsonIndexImageAlt					= ::gpk::jsonExpressionResolve("image.alt"	, content, jsonIndexLang, views.ImageAlt			);
 
-		for(int32_t iPhone = 0, countAddr	= ::gpk::jsonArraySize(*config.Reader[jsonIndexArrayAddr	]); iPhone < countAddr	; ++iPhone)	views.Addresses	.push_back(config.Reader.View[::gpk::jsonArrayValueGet(*config.Reader[jsonIndexArrayAddr	], iPhone)]);
-		for(int32_t iPhone = 0, countPhones	= ::gpk::jsonArraySize(*config.Reader[jsonIndexArrayPhone	]); iPhone < countPhones; ++iPhone)	views.Phones	.push_back(config.Reader.View[::gpk::jsonArrayValueGet(*config.Reader[jsonIndexArrayPhone	], iPhone)]);
-		for(int32_t iPhone = 0, countWPs	= ::gpk::jsonArraySize(*config.Reader[jsonIndexArrayWP		]); iPhone < countWPs	; ++iPhone)	views.WPs		.push_back(config.Reader.View[::gpk::jsonArrayValueGet(*config.Reader[jsonIndexArrayWP		], iPhone)]);
+		for(int32_t iPhone = 0, countAddr	= ::gpk::jsonArraySize(*content[jsonIndexArrayAddr	]); iPhone < countAddr	; ++iPhone)	views.Addresses	.push_back(content.View[::gpk::jsonArrayValueGet(*content[jsonIndexArrayAddr	], iPhone)]);
+		for(int32_t iPhone = 0, countPhones	= ::gpk::jsonArraySize(*content[jsonIndexArrayPhone	]); iPhone < countPhones; ++iPhone)	views.Phones	.push_back(content.View[::gpk::jsonArrayValueGet(*content[jsonIndexArrayPhone	], iPhone)]);
+		for(int32_t iPhone = 0, countWPs	= ::gpk::jsonArraySize(*content[jsonIndexArrayWP	]); iPhone < countWPs	; ++iPhone)	views.WPs		.push_back(content.View[::gpk::jsonArrayValueGet(*content[jsonIndexArrayWP		], iPhone)]);
 
 		gpk_necall(indicesToDisplay.push_back(views), "%s", "Out of memory?");
 	}
-	char														fontSize	[32]					= {};
+	return 0;
+}
+
+static ::gpk::error_t								htmlBoardGenerate					(const ::gpk::view_array<const ::SItemViews> indicesToDisplay, const ::gpk::SCoord2<uint32_t> screenSize, const ::gpk::view_const_string & title, const ::gpk::view_const_string & lang, ::gpk::array_pod<char_t> & output)	{
+	char													fontSize	[32]					= {};
 	if(screenSize.x > screenSize.y)
 		sprintf_s(fontSize, "%u", screenSize.x ? screenSize.x / 45 : 24);
 	else
 		sprintf_s(fontSize, "%u", screenSize.y ? screenSize.y / 34 : 24);
 
-	output.append(::gpk::view_const_string{"\n<div style=\"background-color:#ffffff;position:sticky;left:0;top:0;\">"});
-	output.append(::gpk::view_const_string{ "\n<table style=\"left:0px;top:0px;position:sticky;width:100%;height:100%;text-align:center;\">"});
+	output.append(::gpk::view_const_string{
+		"\n<div style=\"background-color:#ffffff;position:sticky;left:0;top:0;\">"
+		"\n<table style=\"left:0px;top:0px;position:sticky;width:100%;height:100%;text-align:center;\">"
+		"\n<tr style=\"position:sticky;left:0px;top:0px;\" >"
+		"\n<td style=\"position:sticky;left:0px;top:0px;font-size:24px;font-weight:bold;vertical-align:top;\">"
+		});
 
-	output.append(::gpk::view_const_string{ "\n<tr style=\"position:sticky;left:0px;top:0px;\" >"});
-	output.append(::gpk::view_const_string{ "\n<td style=\"position:sticky;left:0px;top:0px;font-size:24px;font-weight:bold;vertical-align:top;\">"});
 	if(lang == ::gpk::view_const_string{"es"})
 		output.append(::gpk::view_const_string{"Buscar"});
 	else
 		output.append(::gpk::view_const_string{"Search"});
 
-	output.append(::gpk::view_const_string{"\n</td>"});
-	output.append(::gpk::view_const_string{"\n<td style=\"position:sticky;left:0px;top:0px;sticky;font-size:24px;font-weight:bold;width:20px;text-align:left;vertical-align:top;\">"});
-	//output.append(::gpk::view_const_string{"\n<img src=\"/obelisco/image/blank.png\"/>"});
-	output.append(::gpk::view_const_string{"\n</td>"});
-	output.append(::gpk::view_const_string{ "\n<td style=\"position:sticky;left:0px;top:0px;width:100%;text-align:left;vertical-align:top;\">"});
-	output.append(::gpk::view_const_string{"<input oninput=\"if(this.value.length > 0) obeSearch(this.value); else clearSearch();\" style=\"position:sticky;left:0px;top:0px;font-size:24px;border-width:1px;width:50%;text-align:left;border-style:solid;border-radius:8px;\" type=\"text\"></input>"});
-	output.append(::gpk::view_const_string{"\n</td>"});
-	output.append(::gpk::view_const_string{"\n</tr>"});
-	output.append(::gpk::view_const_string{"\n</table>"});
-	output.append(::gpk::view_const_string{"\n</div>"});
+	output.append(::gpk::view_const_string{
+		"\n</td>"
+		"\n<td style=\"position:sticky;left:0px;top:0px;sticky;font-size:24px;font-weight:bold;width:20px;text-align:left;vertical-align:top;\">"
+	//"\n<img src=\"/obelisco/image/blank.png\"/>"
+		"\n</td>"
+		 "\n<td style=\"position:sticky;left:0px;top:0px;width:100%;text-align:left;vertical-align:top;\">"
+		"<input oninput=\"if(this.value.length > 0) obeSearch(this.value); else clearSearch();\" style=\"position:sticky;left:0px;top:0px;font-size:24px;border-width:1px;width:50%;text-align:left;border-style:solid;border-radius:8px;\" type=\"text\"></input>"
+		"\n</td>"
+		"\n</tr>"
+		"\n</table>"
+		"\n</div>"
+		});
 
 	output.append(::gpk::view_const_string{ "\n<table style=\"width:100%;height:100%;text-align:center;\">"});
-
 	output.append(::gpk::view_const_string{ "\n<tr style=\"\" >"});
 	output.append(::gpk::view_const_string{ "\n<td style=\"width:100%;font-size:24px; font-weight:bold; vertical-align:top;\">"});
 	output.append(::gpk::view_const_string{ "\n<h1>"});
@@ -425,11 +393,51 @@ static	::gpk::error_t								outputSearchScript					(const ::gpk::view_array<::S
 		output.append(::gpk::view_const_string{"\n</tr>"});
 	}
 	output.append(::gpk::view_const_string{"\n</table>"});
-
-	::outputSearchScript(indicesToDisplay, output);
-
 	output.append(::gpk::view_const_string{"\n</td>"});
 	output.append(::gpk::view_const_string{"\n</tr>"});
 	output.append(::gpk::view_const_string{"\n</table>"});
+
+	output.append(::gpk::view_const_string{"\n<script charset=\"iso-8859-1\">"});
+	::outputSearchScript(indicesToDisplay, output);
+	output.append(::gpk::view_const_string{"\n</script>"});
+	return 0;
+}
+
+::gpk::error_t								ntl::pageCatalog					(const ::gpk::view_const_string & contentFileName, const ::gpk::SCoord2<uint32_t> screenSize, const ::gpk::view_const_string & pathStyles, const AD_SHOP_CATEGORY category, const ::gpk::view_const_string & title, const ::gpk::view_const_string & lang, ::gpk::array_pod<char_t> & output) {
+
+	output.append(::gpk::view_const_string{ "\n<html>"});
+	// --- Head
+	output.append(::gpk::view_const_string{ "\n<head>"});
+	output.append(::gpk::view_const_string{ "\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=iso-8859-1\" />"});
+	::gpk::array_pod<char_t>								fileStyle			;
+	::ntl::httpPath(pathStyles, "blankstyle", "css"	, fileStyle);
+	::ntl::htmlHeaderTitle		(title, output);
+	::ntl::htmlHeaderStyleLink	({fileStyle.begin(), fileStyle.size()}, output);
+	output.append(::gpk::view_const_string{"\n</head>"});
+
+	// --- Body
+	output.append(::gpk::view_const_string{
+		"\n<body style=\"width:100%;height:100%;background-color:#E0E0E0;font-family:Arial;\">"
+		"\n<table style=\"width:100%;height:100%;text-align:center;\">"
+		"\n<tr style=\"\" >"
+		"\n<td style=\"font-size:16px; font-weight:bold; vertical-align:top;\">"
+		});
+
+	//---------------------
+	::gpk::SJSONFile										config								= {};
+	gpk_necall(::gpk::jsonFileRead(config, contentFileName), "Failed to load configuration file: %s.", contentFileName);
+	::gpk::array_obj<::SItemViews>							indicesToDisplay					= {};
+	::getItemViews(config.Reader, category, lang, indicesToDisplay);
+
+	::htmlBoardGenerate(indicesToDisplay, screenSize, title, lang, output);
+
+	output.append(::gpk::view_const_string{
+		"\n</td>"
+		"\n</tr>"
+		"\n</table>"
+		"\n</body>"
+		});
+
+	output.append(::gpk::view_const_string{"\n</html>"	});
 	return 0;
 }
