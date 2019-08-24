@@ -242,24 +242,48 @@ static ::gpk::error_t								htmlBoardGenerate					(const ::gpk::view_array<cons
 
 	output.append(::gpk::view_const_string{
 		"\n<div style=\"background-color:#ffffff;position:sticky;left:0;top:0;\">"
-		"\n<table style=\"left:0px;top:0px;position:sticky;width:100%;height:100%;text-align:center;\">"
-		"\n<tr style=\"position:sticky;left:0px;top:0px;\" >"
-		"\n<td style=\"position:sticky;left:0px;top:0px;font-size:24px;font-weight:bold;vertical-align:top;\">"
+		"\n<table style=\"width:100%;height:100%;text-align:center;\">"
+		"\n<tr style=\"\" >"
+		"\n<td style=\"font-weight:bold;vertical-align:center;font-size:"
 		});
+	output.append(::gpk::view_const_string{fontSize});
+	output.append(::gpk::view_const_string{ "px;\" >"});
 
-	if(lang == ::gpk::view_const_string{"es"})
-		output.append(::gpk::view_const_string{"Buscar"});
-	else
-		output.append(::gpk::view_const_string{"Search"});
+	const ::gpk::view_const_string							textSearch							= (lang == ::gpk::view_const_string{"es"}) ? "Buscar" : "Search";
+	::ntl::htmlTag("h5", textSearch, {}, output);
 
 	output.append(::gpk::view_const_string{
 		"\n</td>"
 		"\n<td style=\"position:sticky;left:0px;top:0px;sticky;font-size:24px;font-weight:bold;width:20px;text-align:left;vertical-align:top;\">"
 	//"\n<img src=\"/obelisco/image/blank.png\"/>"
 		"\n</td>"
-		 "\n<td style=\"position:sticky;left:0px;top:0px;width:100%;text-align:left;vertical-align:top;\">"
+		"\n<td style=\"position:sticky;left:0px;top:0px;width:100%;text-align:left;vertical-align:top;\">"
 		"<input oninput=\"if(this.value.length > 0) obeSearch(this.value); else clearSearch();\" style=\"position:sticky;left:0px;top:0px;font-size:24px;border-width:1px;width:50%;text-align:left;border-style:solid;border-radius:8px;\" type=\"text\"></input>"
 		"\n</td>"
+		});
+
+	//output.append(::gpk::view_const_string{"\n<td style=\"font-weight:bold;font-size:"});
+	//output.append(::gpk::view_const_string{fontSize});
+	//output.append(::gpk::view_const_string{ "px;\" >"});
+	//output.append(::gpk::view_const_string{"<h4>Barrio:<h4>"});
+	//output.append(::gpk::view_const_string{"</td>"});
+	//output.append(::gpk::view_const_string{
+	//	"\n<td>"
+	//	"<select id=\"testSelect1\" style=\"font-size:"
+	//	});
+	//output.append(::gpk::view_const_string{fontSize});
+	//output.append(::gpk::view_const_string{ "px;\" >"});
+	//
+	//::gpk::SJSONFile			barrios;
+	//
+	//output.append(::gpk::view_const_string{
+	//	"  <option value=\"1\"  style=\"\">Montserrat</option>"
+	//	});
+	//output.append(::gpk::view_const_string{
+	//	"</select>"
+	//	"\n</td>"
+	//	});
+	output.append(::gpk::view_const_string{
 		"\n</tr>"
 		"\n</table>"
 		"\n</div>"
@@ -267,7 +291,7 @@ static ::gpk::error_t								htmlBoardGenerate					(const ::gpk::view_array<cons
 
 	output.append(::gpk::view_const_string{ "\n<table style=\"width:100%;height:100%;text-align:center;font-size:"});
 	output.append(::gpk::view_const_string{fontSize});
-	output.append(::gpk::view_const_string{ "px;\">"});
+	output.append(::gpk::view_const_string{ "px;\" >"});
 	output.append(::gpk::view_const_string{ "\n<tr style=\"\" >"});
 	output.append(::gpk::view_const_string{ "\n<td style=\"width:100%;font-weight:bold; vertical-align:top;\">"});
 	::ntl::htmlTag("h2", title, {}, output);
