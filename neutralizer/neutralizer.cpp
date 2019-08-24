@@ -213,6 +213,15 @@
 	return 0;
 }
 
+static	::gpk::error_t							loadPath						(::gpk::view_const_string rootPart, const ::gpk::view_const_string & expression, ::gpk::SJSONReader & reader, int32_t indexRoot, ::gpk::array_pod<char> & path, ::gpk::view_const_string & output)	{
+	::gpk::view_const_string							pathPart;
+	path											= rootPart;
+	::gpk::jsonExpressionResolve(expression, reader, indexRoot, pathPart);
+	path.append(pathPart);
+	output											= ::gpk::label(path.begin(), (uint32_t)-1);
+	return 0;
+}
+
 ::gpk::error_t									ntl::loadConfig					(::ntl::SHTMLEndpoint & programState, int32_t indexRoot)	{
 	if(-1 == indexRoot) {
 		::gpk::view_const_string						rootNode;
@@ -220,28 +229,13 @@
 	}
 	{
 		::gpk::view_const_string							rootPart;
-		::gpk::view_const_string							pathPart;
-		::gpk::array_pod<char>								path;
 		::gpk::jsonExpressionResolve("front.http.path.root", programState.Config.Reader, indexRoot, rootPart);
-		path											= rootPart;
-		::gpk::jsonExpressionResolve("front.http.path.image", programState.Config.Reader, indexRoot, pathPart);
-		path.append(pathPart);
-		programState.Path.Image							= ::gpk::label(path.begin(), (uint32_t)-1);
 
-		path											= rootPart;
-		::gpk::jsonExpressionResolve("front.http.path.css", programState.Config.Reader, indexRoot, pathPart);
-		path.append(pathPart);
-		programState.Path.Style							= ::gpk::label(path.begin(), (uint32_t)-1);
-
-		path											= rootPart;
-		::gpk::jsonExpressionResolve("front.http.path.js", programState.Config.Reader, indexRoot, pathPart);
-		path.append(pathPart);
-		programState.Path.Script						= ::gpk::label(path.begin(), (uint32_t)-1);
-
-		path											= rootPart;
-		::gpk::jsonExpressionResolve("front.http.path.exe", programState.Config.Reader, indexRoot, pathPart);
-		path.append(pathPart);
-		programState.Path.Program						= ::gpk::label(path.begin(), (uint32_t)-1);
+		::gpk::array_pod<char>								path;
+		::loadPath(rootPart, "front.http.path.image"	, programState.Config.Reader, indexRoot, path, programState.Path.Image	);
+		::loadPath(rootPart, "front.http.path.css"		, programState.Config.Reader, indexRoot, path, programState.Path.Style	);
+		::loadPath(rootPart, "front.http.path.js"		, programState.Config.Reader, indexRoot, path, programState.Path.Script	);
+		::loadPath(rootPart, "front.http.path.exe"		, programState.Config.Reader, indexRoot, path, programState.Path.Program);
 	}
 	::gpk::jsonExpressionResolve("front.title"				, programState.Config.Reader, indexRoot, programState.Page.Title		);
 	::gpk::jsonExpressionResolve("front.extension.image"	, programState.Config.Reader, indexRoot, programState.Extension.Image	);
