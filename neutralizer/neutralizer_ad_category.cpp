@@ -150,7 +150,7 @@ static	::gpk::error_t								outputSearchScript					(const ::gpk::view_array<con
 			output.push_back('\'');
 		}
 		if(iWord < (wordSet.size() - 1))
-			output.append(::gpk::view_const_string{","});
+			output.push_back(',');
 	}
 	output.append(::gpk::view_const_string{"];"});
 
@@ -159,21 +159,21 @@ static	::gpk::error_t								outputSearchScript					(const ::gpk::view_array<con
 	char													tempIntStr[256]				= {};
 	for(uint32_t iWord = 0; iWord < wordSet.size(); ++iWord) {
 		const SWordIndices		& element = wordSet[iWord];
-		output.append(::gpk::view_const_string{"["});
+		output.push_back('[');
 		for(uint32_t iArticle = 0; iArticle < element.Indices.size(); ++iArticle) {
 			base64Id.clear();
 			sprintf_s(tempIntStr, "%u", element.Indices[iArticle]);
 			::gpk::base64EncodeFS(::gpk::view_const_string{tempIntStr}, base64Id);
 
-			output.append(::gpk::view_const_string{"'"});
+			output.push_back('\'');
 			output.append(::gpk::view_const_string{base64Id.begin(), base64Id.size()});
-			output.append(::gpk::view_const_string{"'"});
+			output.push_back('\'');
 			if(iArticle < (element.Indices.size() - 1))
-				output.append(::gpk::view_const_string{","});
+				output.push_back(',');
 		}
-		output.append(::gpk::view_const_string{"]"});
+		output.push_back(']');
 		if(iWord < (wordSet.size() - 1))
-			output.append(::gpk::view_const_string{","});
+			output.push_back(',');
 	}
 	output.append(::gpk::view_const_string{"];"});
 
@@ -182,11 +182,11 @@ static	::gpk::error_t								outputSearchScript					(const ::gpk::view_array<con
 		base64Id.clear();
 		sprintf_s(tempIntStr, "%u", iArticle);
 		::gpk::base64EncodeFS(::gpk::view_const_string{tempIntStr}, base64Id);
-		output.append(::gpk::view_const_string{"'"});
+		output.push_back('\'');
 		output.append(::gpk::view_const_string{base64Id.begin(), base64Id.size()});
-		output.append(::gpk::view_const_string{"'"});
+		output.push_back('\'');
 		if(iArticle < (indicesToDisplay.size() - 1))
-			output.append(::gpk::view_const_string{","});
+			output.push_back(',');
 	}
 	output.append(::gpk::view_const_string{"];"});
 	output.append(jsSearch);
@@ -281,118 +281,119 @@ static ::gpk::error_t								htmlBoardGenerate					(const ::gpk::view_array<cons
 	output.append(::gpk::view_const_string{ "\n<tr style=\"\" >"});
 	output.append(::gpk::view_const_string{ "\n<td style=\"width:100%;font-size:24px; font-weight:bold; vertical-align:top;\">"});
 
-	output.append(::gpk::view_const_string{ "\n<table style=\"width:100%;text-align:center;border-style:solid;border-width:2px;\" >"});
-	::gpk::array_pod<char_t>								base64Id;
-	char													tempIntStr[256]				= {};
-	for(int32_t iItem = 0, countItems = indicesToDisplay.size(); iItem < countItems; ++iItem) {
-		const SItemViews										& views						= indicesToDisplay[iItem];
-		base64Id.clear();
-		sprintf_s(tempIntStr, "%u", iItem);
-		::gpk::base64EncodeFS(::gpk::view_const_string{tempIntStr}, base64Id);
+		output.append(::gpk::view_const_string{ "\n<table style=\"width:100%;text-align:center;border-style:solid;border-width:2px;\" >"});
+		::gpk::array_pod<char_t>								base64Id;
+		char													tempIntStr[256]				= {};
+		for(int32_t iItem = 0, countItems = indicesToDisplay.size(); iItem < countItems; ++iItem) {
+			const SItemViews										& views						= indicesToDisplay[iItem];
+			base64Id.clear();
+			sprintf_s(tempIntStr, "%u", iItem);
+			::gpk::base64EncodeFS(::gpk::view_const_string{tempIntStr}, base64Id);
 
-		output.append(::gpk::view_const_string{"\n<tr id=\""});
-		output.append(::gpk::view_const_string{base64Id.begin(), base64Id.size()});
-		output.append(::gpk::view_const_string{"\">"});
-		output.append(::gpk::view_const_string{"\n<td style=\"width:100%;text-align:left;font-size:32px;vertical-align:top;\">"});
-		//
-			output.append(::gpk::view_const_string{ "\n<table style=\"width:100%;height:100%;text-align:center;border-style:solid;border-width:2px;border-radius:16px;\" >"});
-			output.append(::gpk::view_const_string{ "\n<tr>"});
-			output.append(::gpk::view_const_string{ "\n<td style=\"background-color:lightgrey;text-align:left;font-size:32px;vertical-align:top;\">"});
+			output.append(::gpk::view_const_string{"\n<tr id=\""});
+			output.append(::gpk::view_const_string{base64Id.begin(), base64Id.size()});
+			output.append(::gpk::view_const_string{"\">"});
+			output.append(::gpk::view_const_string{"\n<td style=\"width:100%;text-align:left;font-size:32px;vertical-align:top;\">"});
 			//
-			::ntl::htmlHRefLink(views.Title, views.URL, "style=\"text-align:left;text-decoration:none;font-weight:bold;\"", output);
-			output.append(::gpk::view_const_string{"\n</td>"});
-			output.append(::gpk::view_const_string{"\n</tr>"});
-			output.append(::gpk::view_const_string{ "\n<tr>"});
-			output.append(::gpk::view_const_string{ "\n<td style=\"background-color:white;height:100%;text-align:left;font-size:"});
-			output.append(::gpk::view_const_string{fontSize});
-			output.append(::gpk::view_const_string{ "px;vertical-align:top;\">"});
-			::ntl::htmlTag("p", views.Text, "style=\" font-weight:normal;text-align:left;\"", output);
-			//
-			output.append(::gpk::view_const_string{"\n</td>"});
-			output.append(::gpk::view_const_string{"\n</tr>"});
-			output.append(::gpk::view_const_string{"\n</table>"});
-		//
-		output.append(::gpk::view_const_string{"\n</td>"});
-		output.append(::gpk::view_const_string{ "\n<td style=\"background-color:lightgrey;height:100%;text-align:left;font-size:32px;vertical-align:top;\">"});
-
-			output.append(::gpk::view_const_string{ "\n<table style=\"background-color:lightgrey;\" >"});
-			output.append(::gpk::view_const_string{ "\n<tr>"});
-			output.append(::gpk::view_const_string{ "\n<td style=\"background-color:lightgrey;text-align:left;font-size:32px;vertical-align:top;width:100%;\">"});
-			output.append(::gpk::view_const_string{ "<a target=\"blank\" title=\""});
-			output.append(views.ImageTitle);
-			output.append(::gpk::view_const_string{ "\" href=\""});
-			output.append(views.ImageHRef);
-			output.append(::gpk::view_const_string{ "\" class=\"image\" ><img style=\"width:320px;\" decoding=\"async\" elementtiming=\"thumbnail\" alt=\""});
-			output.append(views.ImageAlt);
-			output.append(::gpk::view_const_string{ "\" src=\""});
-			output.append(views.ImageSrc);
-			output.append(::gpk::view_const_string{ "\" ></a>"});
-			output.append(::gpk::view_const_string{"\n</td>"});
-			output.append(::gpk::view_const_string{"\n</tr><tr>"});
-			output.append(::gpk::view_const_string{ "\n<td style=\"background-color:lightgrey;font-size:32px;vertical-align:top;\">"});
-
-			// ----- Image info table
 				output.append(::gpk::view_const_string{ "\n<table style=\"width:100%;height:100%;text-align:center;border-style:solid;border-width:2px;border-radius:16px;\" >"});
-				if(views.MapURL.size()) {
-					output.append(::gpk::view_const_string{ "\n<tr>"});
-					output.append(::gpk::view_const_string{ "\n<td style=\"background-color:lightgrey;text-align:center;font-size:32px;vertical-align:top;\">"});
-					output.append(::gpk::view_const_string{"\n<a target=\"blank\" style=\"margin:4px;font-size:24px;\" href=\""});
-					output.append(views.MapURL);
-					output.append(::gpk::view_const_string{"\">"});
-					if(lang == ::gpk::view_const_string{"es"})
-						output.append(::gpk::view_const_string{"Localización"});
-					else
-						output.append(::gpk::view_const_string{"Location"});
-					output.append(::gpk::view_const_string{"\n</a>"});
-					output.append(::gpk::view_const_string{"\n</td>"});
-					output.append(::gpk::view_const_string{"\n</tr>"});
-				}
-				// ----- Addresses
-				if(views.Addresses.size()) {
-					output.append(::gpk::view_const_string{ "\n<tr style=\"height:100%;\">"});
-					output.append(::gpk::view_const_string{ "\n<td style=\"background-color:lightgrey;text-align:center;font-size:24px;vertical-align:top;border-style:solid;border-top-width:1px;\">"});
-					for(uint32_t iPhone = 0, countAddr = views.Addresses.size(); iPhone < countAddr; ++iPhone) {
-						output.append(views.Addresses[iPhone]);
-						output.append(::gpk::view_const_string{"\n<br />"});
-					}
-					output.append(::gpk::view_const_string{"\n</td>"});
-					output.append(::gpk::view_const_string{"\n</tr>"});
-				}
+				output.append(::gpk::view_const_string{ "\n<tr>"});
+				output.append(::gpk::view_const_string{ "\n<td style=\"background-color:lightgrey;text-align:left;font-size:32px;vertical-align:top;\">"});
+				//
+				::ntl::htmlHRefLink(views.Title, views.URL, "style=\"text-align:left;text-decoration:none;font-weight:bold;\"", output);
+				output.append(::gpk::view_const_string{"\n</td>"});
+				output.append(::gpk::view_const_string{"\n</tr>"});
+				output.append(::gpk::view_const_string{ "\n<tr>"});
+				output.append(::gpk::view_const_string{ "\n<td style=\"background-color:white;height:100%;text-align:left;font-size:"});
+				output.append(::gpk::view_const_string{fontSize});
+				output.append(::gpk::view_const_string{ "px;vertical-align:top;\">"});
+				::ntl::htmlTag("p", views.Text, "style=\" font-weight:normal;text-align:left;\"", output);
+				//
+				output.append(::gpk::view_const_string{"\n</td>"});
+				output.append(::gpk::view_const_string{"\n</tr>"});
+				output.append(::gpk::view_const_string{"\n</table>"});
+			//
+			output.append(::gpk::view_const_string{"\n</td>"});
+			output.append(::gpk::view_const_string{ "\n<td style=\"background-color:lightgrey;height:100%;text-align:left;font-size:32px;vertical-align:top;\">"});
 
-				// ----- Phones
-				if(views.Phones.size() || views.WPs.size()) {
-					output.append(::gpk::view_const_string{ "\n<tr style=\"height:100%;\">"});
-					output.append(::gpk::view_const_string{ "\n<td style=\"background-color:lightgrey;text-align:center;font-size:24px;vertical-align:top;border-style:solid;border-top-width:1px;\">"});
-					for(uint32_t iPhone = 0, countPhones = views.Phones.size(); iPhone < countPhones; ++iPhone) {
-						::gpk::view_const_string								textPhone						= views.Phones[iPhone];
-						output.append(textPhone);
-						output.append(::gpk::view_const_string{"\n<br />"});
+				output.append(::gpk::view_const_string{ "\n<table style=\"background-color:lightgrey;\" >"});
+				output.append(::gpk::view_const_string{ "\n<tr>"});
+				output.append(::gpk::view_const_string{ "\n<td style=\"background-color:lightgrey;text-align:left;font-size:32px;vertical-align:top;width:100%;\">"});
+				output.append(::gpk::view_const_string{ "<a target=\"blank\" title=\""});
+				output.append(views.ImageTitle);
+				output.append(::gpk::view_const_string{ "\" href=\""});
+				output.append(views.ImageHRef);
+				output.append(::gpk::view_const_string{ "\" class=\"image\" ><img style=\"width:320px;\" decoding=\"async\" elementtiming=\"thumbnail\" alt=\""});
+				output.append(views.ImageAlt);
+				output.append(::gpk::view_const_string{ "\" src=\""});
+				output.append(views.ImageSrc);
+				output.append(::gpk::view_const_string{ "\" ></a>"});
+				output.append(::gpk::view_const_string{"\n</td>"});
+				output.append(::gpk::view_const_string{"\n</tr><tr>"});
+				output.append(::gpk::view_const_string{ "\n<td style=\"background-color:lightgrey;font-size:32px;vertical-align:top;\">"});
+
+				// ----- Image info table
+					output.append(::gpk::view_const_string{ "\n<table style=\"width:100%;height:100%;text-align:center;border-style:solid;border-width:2px;border-radius:16px;\" >"});
+					if(views.MapURL.size()) {
+						output.append(::gpk::view_const_string{ "\n<tr>"});
+						output.append(::gpk::view_const_string{ "\n<td style=\"background-color:lightgrey;text-align:center;font-size:32px;vertical-align:top;\">"});
+						output.append(::gpk::view_const_string{"\n<a target=\"blank\" style=\"margin:4px;font-size:24px;\" href=\""});
+						output.append(views.MapURL);
+						output.append(::gpk::view_const_string{"\">"});
+						if(lang == ::gpk::view_const_string{"es"})
+							output.append(::gpk::view_const_string{"Localización"});
+						else
+							output.append(::gpk::view_const_string{"Location"});
+						output.append(::gpk::view_const_string{"\n</a>"});
+						output.append(::gpk::view_const_string{"\n</td>"});
+						output.append(::gpk::view_const_string{"\n</tr>"});
 					}
-					for(uint32_t iPhone = 0, countWPs	 = views.WPs	.size(); iPhone < countWPs		; ++iPhone) {
-						::gpk::view_const_string								textPhone						= views.WPs[iPhone];
-						output.append(::gpk::view_const_string{"\n<a target=\"blank\" href=\"https://wa.me/"});
-						output.append(textPhone);
-						output.append(::gpk::view_const_string{"\" >"});
-						output.append(textPhone);
-						output.append(::gpk::view_const_string{"</a>"});
-						output.append(::gpk::view_const_string{"<br />"});
+					// ----- Addresses
+					if(views.Addresses.size()) {
+						output.append(::gpk::view_const_string{ "\n<tr style=\"height:100%;\">"});
+						output.append(::gpk::view_const_string{ "\n<td style=\"background-color:lightgrey;text-align:center;font-size:24px;vertical-align:top;border-style:solid;border-top-width:1px;\">"});
+						for(uint32_t iPhone = 0, countAddr = views.Addresses.size(); iPhone < countAddr; ++iPhone) {
+							output.append(views.Addresses[iPhone]);
+							output.append(::gpk::view_const_string{"\n<br />"});
+						}
+						output.append(::gpk::view_const_string{"\n</td>"});
+						output.append(::gpk::view_const_string{"\n</tr>"});
 					}
 
-					//
-					output.append(::gpk::view_const_string{"\n</td>"});
-					output.append(::gpk::view_const_string{"\n</tr>"});
-				}
+					// ----- Phones
+					if(views.Phones.size() || views.WPs.size()) {
+						output.append(::gpk::view_const_string{ "\n<tr style=\"height:100%;\">"});
+						output.append(::gpk::view_const_string{ "\n<td style=\"background-color:lightgrey;text-align:center;font-size:24px;vertical-align:top;border-style:solid;border-top-width:1px;\">"});
+						for(uint32_t iPhone = 0, countPhones = views.Phones.size(); iPhone < countPhones; ++iPhone) {
+							::gpk::view_const_string								textPhone						= views.Phones[iPhone];
+							output.append(textPhone);
+							output.append(::gpk::view_const_string{"\n<br />"});
+						}
+						for(uint32_t iPhone = 0, countWPs	 = views.WPs	.size(); iPhone < countWPs		; ++iPhone) {
+							::gpk::view_const_string								textPhone						= views.WPs[iPhone];
+							output.append(::gpk::view_const_string{"\n<a target=\"blank\" href=\"https://wa.me/"});
+							output.append(textPhone);
+							output.append(::gpk::view_const_string{"\" >"});
+							output.append(textPhone);
+							output.append(::gpk::view_const_string{"</a>"});
+							output.append(::gpk::view_const_string{"<br />"});
+						}
+
+						//
+						output.append(::gpk::view_const_string{"\n</td>"});
+						output.append(::gpk::view_const_string{"\n</tr>"});
+					}
+					output.append(::gpk::view_const_string{"\n</table>"});
+
+				output.append(::gpk::view_const_string{"\n</td>"});
+				output.append(::gpk::view_const_string{"\n</tr>"});
 				output.append(::gpk::view_const_string{"\n</table>"});
 
+
 			output.append(::gpk::view_const_string{"\n</td>"});
 			output.append(::gpk::view_const_string{"\n</tr>"});
-			output.append(::gpk::view_const_string{"\n</table>"});
+		}
+		output.append(::gpk::view_const_string{"\n</table>"});
 
-
-		output.append(::gpk::view_const_string{"\n</td>"});
-		output.append(::gpk::view_const_string{"\n</tr>"});
-	}
-	output.append(::gpk::view_const_string{"\n</table>"});
 	output.append(::gpk::view_const_string{"\n</td>"});
 	output.append(::gpk::view_const_string{"\n</tr>"});
 	output.append(::gpk::view_const_string{"\n</table>"});
