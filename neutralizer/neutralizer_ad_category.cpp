@@ -20,9 +20,8 @@ static	const ::gpk::view_const_string				jsSearch							=
 	"\n				continue;		"
 	"\n			if(names[pos].indexOf(toFind) > -1) {"
 	"\n				var idc = 0;"
-	"\n				for(idc = 0; idc < indices[pos].length; idc++) {"
+	"\n				for(idc = 0; idc < indices[pos].length; idc++)"
 	"\n					document.getElementById(indices[pos][idc]).style.visibility = 'visible';"
-	"\n				}"
 	"\n			}"
 	"\n		}"
 	"\n	}"
@@ -269,10 +268,7 @@ static ::gpk::error_t								htmlBoardGenerate					(const ::gpk::view_array<cons
 	output.append(::gpk::view_const_string{ "\n<table style=\"width:100%;height:100%;text-align:center;\">"});
 	output.append(::gpk::view_const_string{ "\n<tr style=\"\" >"});
 	output.append(::gpk::view_const_string{ "\n<td style=\"width:100%;font-size:24px; font-weight:bold; vertical-align:top;\">"});
-	output.append(::gpk::view_const_string{ "\n<h1>"});
-	output.append(title);
-	output.append(::gpk::view_const_string{ "</h1>"});
-
+	::ntl::htmlTag("h1", title, {}, output);
 	output.append(::gpk::view_const_string{"\n</td>"});
 	output.append(::gpk::view_const_string{"\n</tr>"});
 	output.append(::gpk::view_const_string{ "\n<tr style=\"\" >"});
