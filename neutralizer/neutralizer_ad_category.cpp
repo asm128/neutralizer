@@ -12,9 +12,8 @@ static	const ::gpk::view_const_string				jsSearch							=
 	"\n var lowerToFind		= textToFind.toLowerCase();"
 	"\n	var wordsToFind		= lowerToFind.split(' ');"
 	"\n	var pos				= 0;"
-	"\n	for(pos = 0; pos < idList.length; pos = pos +1) {"
+	"\n	for(pos = 0; pos < idList.length; pos = pos +1)"
 	"\n		document.getElementById(idList[pos]).style.visibility = 'collapse';"
-	"\n	}"
 	"\n	for(pos = 0; pos < names.length; pos = pos +1) {"
 	"\n		for(toFind of wordsToFind) {"
 	"\n			if(' ' === toFind || '' === toFind)	"
@@ -29,10 +28,8 @@ static	const ::gpk::view_const_string				jsSearch							=
 	"\n	}"
 	"\n}"
 	"\nfunction clearSearch() {"
-	"\n	var pos = 0;"
-	"\n	for(pos = 0; pos < idList.length; pos = pos +1) {"
-	"\n		document.getElementById(idList[pos]).style.visibility = 'visible';"
-	"\n	}"
+	"\n	for(id of idList)"
+	"\n		document.getElementById(id).style.visibility = 'visible';"
 	"\n}"
 	;
 
