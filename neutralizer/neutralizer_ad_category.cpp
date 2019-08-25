@@ -43,6 +43,7 @@ struct SItemViews {
 	::gpk::view_const_string							ImageTitle					= {};
 	::gpk::view_const_string							ImageAlt					= {};
 	::gpk::view_const_string							MapURL						= {};
+	::gpk::array_pod<uint32_t>							Barrio						= {};
 	::gpk::array_obj<::gpk::view_const_string>			Phones						= {};
 	::gpk::array_obj<::gpk::view_const_string>			Addresses					= {};
 	::gpk::array_obj<::gpk::view_const_string>			WPs							= {};
@@ -122,6 +123,13 @@ static	::gpk::error_t								getWordDict							(const ::SItemViews& item, uint32
 	return 0;
 }
 
+struct SBarrio {
+			::gpk::view_const_string					Name						= {};
+			::gpk::view_const_string					Area						= {};
+			::gpk::view_const_string					Population					= {};
+			::gpk::view_const_string					Commune						= {};
+};
+
 static	::gpk::error_t								outputSearchScript					(const ::gpk::view_array<const ::SItemViews> & indicesToDisplay, ::gpk::array_pod<char_t> & output) {
 	::gpk::array_obj<::SWordIndices>						wordSet;
 	::gpk::array_obj<::gpk::array_pod<char_t>>				cacheItemWords;
@@ -185,6 +193,23 @@ static	::gpk::error_t								outputSearchScript					(const ::gpk::view_array<con
 			output.push_back(',');
 	}
 	output.append(::gpk::view_const_string{"];"});
+	output.append(::gpk::view_const_string{"\nvar barrioIdMap=["});
+	for(uint32_t iArticle = 0; iArticle < indicesToDisplay.size(); ++iArticle) {
+		const ::SItemViews										& ad								= indicesToDisplay[iArticle];
+		output.push_back('[');
+		for(uint32_t iBarrio = 0; iBarrio < ad.Barrio.size(); ++iBarrio) {
+			output.push_back('\'');
+			sprintf_s(tempIntStr, "%u", ad.Barrio[iBarrio]);
+			output.append(::gpk::view_const_string{tempIntStr});
+			output.push_back('\'');
+			if(iBarrio < (ad.Barrio.size() - 1))
+				output.push_back(',');
+		}
+		output.push_back(']');
+		if(iArticle < (indicesToDisplay.size() - 1))
+			output.push_back(',');
+	}
+	output.append(::gpk::view_const_string{"];"});
 	output.append(jsSearch);
 	return 0;
 }
@@ -211,6 +236,7 @@ static	::gpk::error_t								getItemViews						(::gpk::SJSONReader & content, co
 		const ::gpk::error_t									jsonIndexArrayPhone					= ::gpk::jsonExpressionResolve("phone"		, content, jsonIndexCurrentItem, views.MapURL		);
 		const ::gpk::error_t									jsonIndexArrayWP					= ::gpk::jsonExpressionResolve("whatsapp"	, content, jsonIndexCurrentItem, views.MapURL		);
 		const ::gpk::error_t									jsonIndexArrayAddr					= ::gpk::jsonExpressionResolve("address"	, content, jsonIndexCurrentItem, views.MapURL		);
+		const ::gpk::error_t									jsonIndexArrayBarrios				= ::gpk::jsonExpressionResolve("barrio"		, content, jsonIndexCurrentItem, views.MapURL		);
 		// ---- Root properties.
 		const ::gpk::error_t									jsonIndexName						= ::gpk::jsonExpressionResolve("name"		, content, jsonIndexCurrentItem, views.Name		);
 		const ::gpk::error_t									jsonIndexMap						= ::gpk::jsonExpressionResolve("location"	, content, jsonIndexCurrentItem, views.MapURL		);
@@ -224,87 +250,19 @@ static	::gpk::error_t								getItemViews						(::gpk::SJSONReader & content, co
 		const ::gpk::error_t									jsonIndexImageTitle					= ::gpk::jsonExpressionResolve("image.title", content, jsonIndexLang, views.ImageTitle		);
 		const ::gpk::error_t									jsonIndexImageAlt					= ::gpk::jsonExpressionResolve("image.alt"	, content, jsonIndexLang, views.ImageAlt			);
 
-		for(int32_t iPhone = 0, countAddr	= ::gpk::jsonArraySize(*content[jsonIndexArrayAddr	]); iPhone < countAddr	; ++iPhone)	views.Addresses	.push_back(content.View[::gpk::jsonArrayValueGet(*content[jsonIndexArrayAddr	], iPhone)]);
-		for(int32_t iPhone = 0, countPhones	= ::gpk::jsonArraySize(*content[jsonIndexArrayPhone	]); iPhone < countPhones; ++iPhone)	views.Phones	.push_back(content.View[::gpk::jsonArrayValueGet(*content[jsonIndexArrayPhone	], iPhone)]);
-		for(int32_t iPhone = 0, countWPs	= ::gpk::jsonArraySize(*content[jsonIndexArrayWP	]); iPhone < countWPs	; ++iPhone)	views.WPs		.push_back(content.View[::gpk::jsonArrayValueGet(*content[jsonIndexArrayWP		], iPhone)]);
+		for(int32_t iPhone	= 0, countAddr		= ::gpk::jsonArraySize(*content[jsonIndexArrayAddr		]); iPhone	< countAddr		; ++iPhone	)	views.Addresses	.push_back(content.View[::gpk::jsonArrayValueGet(*content[jsonIndexArrayAddr	], iPhone	)]);
+		for(int32_t iPhone	= 0, countPhones	= ::gpk::jsonArraySize(*content[jsonIndexArrayPhone		]); iPhone	< countPhones	; ++iPhone	)	views.Phones	.push_back(content.View[::gpk::jsonArrayValueGet(*content[jsonIndexArrayPhone	], iPhone	)]);
+		for(int32_t iPhone	= 0, countWPs		= ::gpk::jsonArraySize(*content[jsonIndexArrayWP		]); iPhone	< countWPs		; ++iPhone	)	views.WPs		.push_back(content.View[::gpk::jsonArrayValueGet(*content[jsonIndexArrayWP		], iPhone	)]);
+		for(int32_t iBarrio	= 0, countBarrios	= ::gpk::jsonArraySize(*content[jsonIndexArrayBarrios	]); iBarrio	< countBarrios	; ++iBarrio	)	views.Barrio	.push_back((uint32_t)content.Token[::gpk::jsonArrayValueGet(*content[jsonIndexArrayBarrios], iBarrio	)].Value);
 
 		gpk_necall(indicesToDisplay.push_back(views), "%s", "Out of memory?");
 	}
 	return 0;
 }
 
-static ::gpk::error_t								htmlBoardGenerate					(const ::gpk::view_array<const ::SItemViews> indicesToDisplay, const ::gpk::SCoord2<uint32_t> screenSize, const ::gpk::view_const_string & title, const ::gpk::view_const_string & lang, ::gpk::array_pod<char_t> & output)	{
-	char													fontSize	[32]					= {};
-	if(screenSize.x > screenSize.y)
-		sprintf_s(fontSize, "%u", screenSize.x ? screenSize.x / 55 : 24);
-	else
-		sprintf_s(fontSize, "%u", screenSize.y ? screenSize.y / 44 : 24);
-
-	output.append(::gpk::view_const_string{
-		"\n<div style=\"background-color:#ffffff;position:sticky;left:0;top:0;\">"
-		"\n<table style=\"width:100%;height:100%;text-align:center;\">"
-		"\n<tr style=\"\" >"
-		"\n<td style=\"font-weight:bold;vertical-align:center;font-size:"
-		});
-	output.append(::gpk::view_const_string{fontSize});
-	output.append(::gpk::view_const_string{ "px;\" >"});
-
-	const ::gpk::view_const_string							textSearch							= (lang == ::gpk::view_const_string{"es"}) ? "Buscar" : "Search";
-	::ntl::htmlTag("h5", textSearch, {}, output);
-
-	output.append(::gpk::view_const_string{
-		"\n</td>"
-		"\n<td style=\"position:sticky;left:0px;top:0px;sticky;font-size:24px;font-weight:bold;width:20px;text-align:left;vertical-align:top;\">"
-	//"\n<img src=\"/obelisco/image/blank.png\"/>"
-		"\n</td>"
-		"\n<td style=\"position:sticky;left:0px;top:0px;width:100%;text-align:left;vertical-align:top;\">"
-		"<input oninput=\"if(this.value.length > 0) obeSearch(this.value); else clearSearch();\" style=\"position:sticky;height:100%;font-size:24px;border-width:1px;width:50%;text-align:left;border-style:solid;border-radius:8px;\" type=\"text\"></input>"
-		"\n</td>"
-		});
-
-	output.append(::gpk::view_const_string{"\n<td style=\"font-weight:bold;font-size:"});
-	output.append(::gpk::view_const_string{fontSize});
-	output.append(::gpk::view_const_string{ "px;\" >"});
-	output.append(::gpk::view_const_string{"<h5>Barrio:<h5>"});
-	output.append(::gpk::view_const_string{"</td>"});
-	output.append(::gpk::view_const_string{
-		"\n<td>"
-		"<select id=\"testSelect1\" style=\"font-size:"
-		});
-	output.append(::gpk::view_const_string{fontSize});
-	output.append(::gpk::view_const_string{ "px;\" >"});
-
-	::gpk::SJSONFile										barrios							;
-	::gpk::jsonFileRead(barrios, "barrios.json");
-	const ::gpk::error_t									countBarrios					= ::gpk::jsonArraySize(*barrios.Reader[0]);
-	char													tempBarrioOption[256]			= {};
-	::gpk::view_const_string								barrioName;
-	if(lang == ::gpk::view_const_string{"es"})
-		output.append(::gpk::view_const_string{"\n<option value=\"-1\" style=\"\">Todos</option>"});
-	else
-		output.append(::gpk::view_const_string{"\n<option value=\"-1\" style=\"\">All</option>"});
-	for(int32_t iBarrio = 0; iBarrio < countBarrios; ++iBarrio) {
-		int32_t													indexBarrioNode					= ::gpk::jsonArrayValueGet(*barrios.Reader[0], iBarrio);
-		int32_t													indexBarrioName					= ::gpk::jsonObjectValueGet(*barrios.Reader[indexBarrioNode], barrios.Reader.View, "name");
-		sprintf_s(tempBarrioOption, "\n<option value=\"%u\" style=\"\">", iBarrio);
-		output.append(::gpk::view_const_string{tempBarrioOption});
-		output.append(barrios.Reader.View[indexBarrioName]);
-		output.append(::gpk::view_const_string{"</option>"});
-	}
-
-	output.append(::gpk::view_const_string{
-		"</select>"
-		"\n</td>"
-		});
-
-	output.append(::gpk::view_const_string{
-		"\n</tr>"
-		"\n</table>"
-		"\n</div>"
-		});
-
+static ::gpk::error_t								htmlBoardGenerate					(const ::gpk::view_array<const ::SItemViews> indicesToDisplay, const ::gpk::view_const_string & fontSize, const ::gpk::view_const_string & title, const ::gpk::view_const_string & lang, ::gpk::array_pod<char_t> & output)	{
 	output.append(::gpk::view_const_string{ "\n<table style=\"width:100%;height:100%;text-align:center;font-size:"});
-	output.append(::gpk::view_const_string{fontSize});
+	output.append(fontSize);
 	output.append(::gpk::view_const_string{ "px;\" >"});
 	output.append(::gpk::view_const_string{ "\n<tr style=\"\" >"});
 	output.append(::gpk::view_const_string{ "\n<td style=\"width:100%;font-weight:bold; vertical-align:top;\">"});
@@ -331,7 +289,7 @@ static ::gpk::error_t								htmlBoardGenerate					(const ::gpk::view_array<cons
 			output.append(::gpk::view_const_string{"\n<td style=\"width:100%;text-align:left;vertical-align:top;\">"});
 			//
 				output.append(::gpk::view_const_string{"\n<table style=\"width:100%;height:100%;text-align:center;border-style:solid;border-width:2px;border-radius:16px;font-size:"});
-				output.append(::gpk::view_const_string{fontSize});
+				output.append(fontSize);
 				output.append(::gpk::view_const_string{"px;\" >"});
 				output.append(::gpk::view_const_string{"\n<tr>"});
 				output.append(::gpk::view_const_string{"\n<td style=\"background-color:lightgrey;text-align:left;vertical-align:top;\">"});
@@ -343,7 +301,7 @@ static ::gpk::error_t								htmlBoardGenerate					(const ::gpk::view_array<cons
 				output.append(::gpk::view_const_string{"\n</tr>"});
 				output.append(::gpk::view_const_string{"\n<tr>"});
 				output.append(::gpk::view_const_string{"\n<td style=\"vertical-align:top;background-color:white;height:100%;text-align:left;font-size:"});
-				output.append(::gpk::view_const_string{fontSize});
+				output.append(fontSize);
 				output.append(::gpk::view_const_string{ "px;\">"});
 				::ntl::htmlTag("h3", views.Text, "style=\" font-weight:normal;text-align:left;\"", output);
 				//
@@ -372,12 +330,12 @@ static ::gpk::error_t								htmlBoardGenerate					(const ::gpk::view_array<cons
 
 				// ----- Image info table
 					output.append(::gpk::view_const_string{ "\n<table style=\"width:100%;height:100%;text-align:center;border-style:solid;border-width:2px;border-radius:16px;\" font-size:"});
-					output.append(::gpk::view_const_string{fontSize});
+					output.append(fontSize);
 					output.append(::gpk::view_const_string{ "px;\">"});
 					if(views.MapURL.size()) {
 						output.append(::gpk::view_const_string{ "\n<tr>"});
 						output.append(::gpk::view_const_string{ "\n<td style=\"background-color:lightgrey;text-align:center;vertical-align:top;font-size:"});
-						output.append(::gpk::view_const_string{fontSize});
+						output.append(fontSize);
 						output.append(::gpk::view_const_string{ "px;\">"});
 						output.append(::gpk::view_const_string{"\n<a target=\"blank\" style=\"margin:4px;\" href=\""});
 						output.append(views.MapURL);
@@ -394,7 +352,7 @@ static ::gpk::error_t								htmlBoardGenerate					(const ::gpk::view_array<cons
 					if(views.Addresses.size()) {
 						output.append(::gpk::view_const_string{ "\n<tr style=\"height:100%;\">"});
 						output.append(::gpk::view_const_string{ "\n<td style=\"background-color:lightgrey;text-align:center;vertical-align:top;border-style:solid;border-top-width:1px;font-size:"});
-						output.append(::gpk::view_const_string{fontSize});
+						output.append(fontSize);
 						output.append(::gpk::view_const_string{"px;\" >"});
 						for(uint32_t iPhone = 0, countAddr = views.Addresses.size(); iPhone < countAddr; ++iPhone) {
 							output.append(views.Addresses[iPhone]);
@@ -408,7 +366,7 @@ static ::gpk::error_t								htmlBoardGenerate					(const ::gpk::view_array<cons
 					if(views.Phones.size() || views.WPs.size()) {
 						output.append(::gpk::view_const_string{ "\n<tr style=\"height:100%;\">"});
 						output.append(::gpk::view_const_string{ "\n<td style=\"background-color:lightgrey;text-align:center;vertical-align:top;border-style:solid;border-top-width:1px;font-size:"});
-						output.append(::gpk::view_const_string{fontSize});
+						output.append(fontSize);
 						output.append(::gpk::view_const_string{"px;\" >"});
 						for(uint32_t iPhone = 0, countPhones = views.Phones.size(); iPhone < countPhones; ++iPhone) {
 							output.append(views.Phones[iPhone]);
@@ -444,9 +402,6 @@ static ::gpk::error_t								htmlBoardGenerate					(const ::gpk::view_array<cons
 	output.append(::gpk::view_const_string{"\n</tr>"});
 	output.append(::gpk::view_const_string{"\n</table>"});
 
-	output.append(::gpk::view_const_string{"\n<script charset=\"iso-8859-1\">"});
-	::outputSearchScript(indicesToDisplay, output);
-	output.append(::gpk::view_const_string{"\n</script>"});
 	return 0;
 }
 
@@ -476,7 +431,97 @@ static ::gpk::error_t								htmlBoardGenerate					(const ::gpk::view_array<cons
 	::gpk::array_obj<::SItemViews>							indicesToDisplay					= {};
 	::getItemViews(config.Reader, category, lang, indicesToDisplay);
 
-	::htmlBoardGenerate(indicesToDisplay, screenSize, title, lang, output);
+	char													fontSize	[32]					= {};
+	if(screenSize.x > screenSize.y)
+		sprintf_s(fontSize, "%u", screenSize.x ? screenSize.x / 55 : 24);
+	else
+		sprintf_s(fontSize, "%u", screenSize.y ? screenSize.y / 44 : 24);
+
+	output.append(::gpk::view_const_string{
+		"\n<div style=\"background-color:#ffffff;position:sticky;left:0;top:0;\">"
+		"\n<table style=\"width:100%;height:100%;text-align:center;\">"
+		"\n<tr style=\"\" >"
+		"\n<td style=\"font-weight:bold;vertical-align:center;font-size:"
+		});
+	output.append(::gpk::view_const_string{fontSize});
+	output.append(::gpk::view_const_string{ "px;\" >"});
+
+	const ::gpk::view_const_string							textSearch							= (lang == ::gpk::view_const_string{"es"}) ? "Buscar" : "Search";
+	::ntl::htmlTag("h5", textSearch, {}, output);
+
+	output.append(::gpk::view_const_string{
+		"\n</td>"
+		"\n<td style=\"position:sticky;left:0px;top:0px;sticky;font-size:24px;font-weight:bold;width:20px;text-align:left;vertical-align:top;\">"
+	//"\n<img src=\"/obelisco/image/blank.png\"/>"
+		"\n</td>"
+		"\n<td style=\"position:sticky;left:0px;top:0px;width:100%;text-align:left;vertical-align:top;\">"
+		"<input oninput=\"if(this.value.length > 0) obeSearch(this.value); else clearSearch();\" style=\"position:sticky;height:100%;font-size:24px;border-width:1px;width:50%;text-align:left;border-style:solid;border-radius:8px;\" type=\"text\"></input>"
+		"\n</td>"
+		});
+
+#define ENABLE_CATALOG_BARRIO
+#if defined(ENABLE_CATALOG_BARRIO)
+	output.append(::gpk::view_const_string{"\n<td style=\"font-weight:bold;font-size:"});
+	output.append(::gpk::view_const_string{fontSize});
+	output.append(::gpk::view_const_string{ "px;\" >"});
+	output.append(::gpk::view_const_string{"<h5>Barrio:<h5>"});
+	output.append(::gpk::view_const_string{"</td>"});
+	output.append(::gpk::view_const_string{
+		"\n<td>"
+		"<select id=\"selectBarrio\" onchange=\"\" style=\"font-size:"
+		});
+	output.append(::gpk::view_const_string{fontSize});
+	output.append(::gpk::view_const_string{ "px;\" >"});
+
+	::gpk::SJSONFile										jsonBarrios;
+	::gpk::jsonFileRead(jsonBarrios, "barrios.json");
+	const ::gpk::error_t									countBarrios					= ::gpk::jsonArraySize(*jsonBarrios.Reader[0]);
+	char													tempBarrioOption[256]			= {};
+	::gpk::view_const_string								barrioName;
+	if(lang == ::gpk::view_const_string{"es"})
+		output.append(::gpk::view_const_string{"\n<option value=\"-1\" style=\"\">Todos</option>"});
+	else
+		output.append(::gpk::view_const_string{"\n<option value=\"-1\" style=\"\">All</option>"});
+
+	;;gpk::array_obj<::SBarrio>								viewsBarrio;
+	for(int32_t iBarrio = 0; iBarrio < countBarrios; ++iBarrio) {
+		int32_t													indexBarrioNode					= ::gpk::jsonArrayValueGet(*jsonBarrios.Reader[0], iBarrio);
+		int32_t													indexBarrioName					= ::gpk::jsonObjectValueGet(*jsonBarrios.Reader[indexBarrioNode], jsonBarrios.Reader.View, "name"		);
+		int32_t													indexBarrioArea					= ::gpk::jsonObjectValueGet(*jsonBarrios.Reader[indexBarrioNode], jsonBarrios.Reader.View, "area"		);
+		int32_t													indexBarrioPopulation			= ::gpk::jsonObjectValueGet(*jsonBarrios.Reader[indexBarrioNode], jsonBarrios.Reader.View, "population"	);
+		int32_t													indexBarrioCommune				= ::gpk::jsonObjectValueGet(*jsonBarrios.Reader[indexBarrioNode], jsonBarrios.Reader.View, "commune"	);
+		::SBarrio												barrio;
+		barrio.Name											= jsonBarrios.Reader.View[indexBarrioName		];
+		barrio.Area											= jsonBarrios.Reader.View[indexBarrioArea		];
+		barrio.Population									= jsonBarrios.Reader.View[indexBarrioPopulation	];
+		barrio.Commune										= jsonBarrios.Reader.View[indexBarrioCommune	];
+		viewsBarrio.push_back(barrio);
+	}
+
+	for(uint32_t iBarrio = 0; iBarrio < viewsBarrio.size(); ++iBarrio) {
+		sprintf_s(tempBarrioOption, "\n<option value=\"%u\" style=\"\">", iBarrio);
+		output.append(::gpk::view_const_string{tempBarrioOption});
+		output.append(viewsBarrio[iBarrio].Name);
+		output.append(::gpk::view_const_string{"</option>"});
+	}
+
+	output.append(::gpk::view_const_string{
+		"</select>"
+		"\n</td>"
+		});
+#endif
+
+	output.append(::gpk::view_const_string{
+		"\n</tr>"
+		"\n</table>"
+		"\n</div>"
+		});
+
+	::htmlBoardGenerate(indicesToDisplay, fontSize, title, lang, output);
+
+	output.append(::gpk::view_const_string{"\n<script charset=\"iso-8859-1\">"});
+	::outputSearchScript(indicesToDisplay, output);
+	output.append(::gpk::view_const_string{"\n</script>"});
 
 	output.append(::gpk::view_const_string{
 		"\n</td>"
