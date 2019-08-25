@@ -1,6 +1,6 @@
 {	"obelisco" : 
 	{	"front"	: 
-		{	"title": "- Obelisco - Un Patrimonio Incalculable de la República de la Nación Argentina -"
+		{	"title": "- Obelisco - Un Patrimonio Incalculable -"
 		,	"http" : 
 			{	"path"			: // Paths have to start with a / and will be relative to (appended at the end of) "root" 
 				{	"root"			: "/obelisco"	// This is the root path of the applicaiton. It's used as basis for 
@@ -34,7 +34,7 @@
 	}
 ,	"tuobelisco" : 
 	{	"front"	: 
-		{	"title": "- Tu Obelisco - Un Patrimonio Incalculable de la República de la Nación Argentina -"
+		{	"title": "- Tu Obelisco - Un Patrimonio Incalculable -"
 		,	"http" : 
 			{	"path"			: // Paths have to start with a / and will be relative to (appended at the end of) "root" 
 				{	"root"			: "/tuobelisco"	// This is the root path of the applicaiton. It's used as basis for 
