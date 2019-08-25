@@ -186,10 +186,7 @@ static	::gpk::error_t								outputSearchScript					(const ::gpk::view_array<con
 		output.push_back('[');
 		for(uint32_t iArticle = 0; iArticle < element.Indices.size(); ++iArticle) {
 			sprintf_s(tempIntStr, "%u", element.Indices[iArticle]);
-
-			output.push_back('\'');
 			output.append(::gpk::view_const_string{tempIntStr});
-			output.push_back('\'');
 			if(iArticle < (element.Indices.size() - 1))
 				output.push_back(',');
 		}
@@ -202,9 +199,7 @@ static	::gpk::error_t								outputSearchScript					(const ::gpk::view_array<con
 	output.append(::gpk::view_const_string{"\nvar idList=["});
 	for(uint32_t iArticle = 0; iArticle < indicesToDisplay.size(); ++iArticle) {
 		sprintf_s(tempIntStr, "%u", iArticle);
-		output.push_back('\'');
 		output.append(::gpk::view_const_string{tempIntStr});
-		output.push_back('\'');
 		if(iArticle < (indicesToDisplay.size() - 1))
 			output.push_back(',');
 	}
@@ -214,10 +209,8 @@ static	::gpk::error_t								outputSearchScript					(const ::gpk::view_array<con
 		const ::SItemViews										& ad								= indicesToDisplay[iArticle];
 		output.push_back('[');
 		for(uint32_t iBarrio = 0; iBarrio < ad.Barrio.size(); ++iBarrio) {
-			output.push_back('\'');
 			sprintf_s(tempIntStr, "%u", ad.Barrio[iBarrio]);
 			output.append(::gpk::view_const_string{tempIntStr});
-			output.push_back('\'');
 			if(iBarrio < (ad.Barrio.size() - 1))
 				output.push_back(',');
 		}
@@ -277,11 +270,11 @@ static ::gpk::error_t								htmlBoardGenerate					(const ::gpk::view_array<cons
 				output.append(::gpk::view_const_string{"\n</table>"});
 			//
 			output.append(::gpk::view_const_string{"\n</td>"});
-			output.append(::gpk::view_const_string{ "\n<td style=\"background-color:lightgrey;height:100%;text-align:left;vertical-align:top;\">"});
+			output.append(::gpk::view_const_string{ "\n<td style=\"height:100%;text-align:left;vertical-align:top;\">"});
 
-				output.append(::gpk::view_const_string{ "\n<table style=\"background-color:lightgrey;\" >"});
+				output.append(::gpk::view_const_string{ "\n<table style=\"\" >"});
 				output.append(::gpk::view_const_string{ "\n<tr>"});
-				output.append(::gpk::view_const_string{ "\n<td style=\"background-color:lightgrey;text-align:left;vertical-align:top;width:100%;\">"});
+				output.append(::gpk::view_const_string{ "\n<td style=\"text-align:left;vertical-align:top;width:100%;\">"});
 				output.append(::gpk::view_const_string{ "<a target=\"blank\" title=\""});
 				output.append(views.ImageTitle);
 				output.append(::gpk::view_const_string{ "\" href=\""});
@@ -293,15 +286,15 @@ static ::gpk::error_t								htmlBoardGenerate					(const ::gpk::view_array<cons
 				output.append(::gpk::view_const_string{ "\" ></a>"});
 				output.append(::gpk::view_const_string{"\n</td>"});
 				output.append(::gpk::view_const_string{"\n</tr><tr>"});
-				output.append(::gpk::view_const_string{ "\n<td style=\"background-color:lightgrey;vertical-align:top;\">"});
+				output.append(::gpk::view_const_string{ "\n<td style=\"vertical-align:top;\">"});
 
 				// ----- Image info table
-					output.append(::gpk::view_const_string{ "\n<table style=\"width:100%;height:100%;text-align:center;border-style:solid;border-width:2px;border-radius:16px;\" font-size:"});
+					output.append(::gpk::view_const_string{ "\n<table style=\"background-color:white;width:100%;height:100%;text-align:center;border-style:solid;border-width:2px;border-radius:16px;\" font-size:"});
 					output.append(fontSize);
 					output.append(::gpk::view_const_string{ "px;\">"});
 					if(views.MapURL.size()) {
 						output.append(::gpk::view_const_string{ "\n<tr>"});
-						output.append(::gpk::view_const_string{ "\n<td style=\"background-color:lightgrey;text-align:center;vertical-align:top;font-size:"});
+						output.append(::gpk::view_const_string{ "\n<td style=\"text-align:center;vertical-align:top;font-size:"});
 						output.append(fontSize);
 						output.append(::gpk::view_const_string{ "px;\">"});
 						output.append(::gpk::view_const_string{"\n<a target=\"blank\" style=\"margin:4px;\" href=\""});
@@ -318,7 +311,7 @@ static ::gpk::error_t								htmlBoardGenerate					(const ::gpk::view_array<cons
 					// ----- Addresses
 					if(views.Addresses.size()) {
 						output.append(::gpk::view_const_string{ "\n<tr style=\"height:100%;\">"});
-						output.append(::gpk::view_const_string{ "\n<td style=\"background-color:lightgrey;text-align:center;vertical-align:top;border-style:solid;border-top-width:1px;font-size:"});
+						output.append(::gpk::view_const_string{ "\n<td style=\"text-align:center;vertical-align:top;border-style:solid;border-top-width:1px;font-size:"});
 						output.append(fontSize);
 						output.append(::gpk::view_const_string{"px;\" >"});
 						for(uint32_t iPhone = 0, countAddr = views.Addresses.size(); iPhone < countAddr; ++iPhone) {
@@ -332,7 +325,7 @@ static ::gpk::error_t								htmlBoardGenerate					(const ::gpk::view_array<cons
 					// ----- Phones
 					if(views.Phones.size() || views.WPs.size()) {
 						output.append(::gpk::view_const_string{ "\n<tr style=\"height:100%;\">"});
-						output.append(::gpk::view_const_string{ "\n<td style=\"background-color:lightgrey;text-align:center;vertical-align:top;border-style:solid;border-top-width:1px;font-size:"});
+						output.append(::gpk::view_const_string{ "\n<td style=\"text-align:center;vertical-align:top;border-style:solid;border-top-width:1px;font-size:"});
 						output.append(fontSize);
 						output.append(::gpk::view_const_string{"px;\" >"});
 						for(uint32_t iPhone = 0, countPhones = views.Phones.size(); iPhone < countPhones; ++iPhone) {
@@ -386,7 +379,7 @@ static ::gpk::error_t								htmlBoardGenerate					(const ::gpk::view_array<cons
 
 	// --- Body
 	output.append(::gpk::view_const_string{
-		"\n<body style=\"width:100%;height:100%;background-color:#E0E0E0;font-family:Arial;\">"
+		"\n<body style=\"width:100%;height:100%;font-family:Arial;\">"
 		"\n<table style=\"width:100%;height:100%;text-align:center;\">"
 		"\n<tr style=\"\" >"
 		"\n<td style=\"font-size:16px; font-weight:bold; vertical-align:top;\">"
