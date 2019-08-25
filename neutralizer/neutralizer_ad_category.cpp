@@ -9,6 +9,9 @@
 
 static	const ::gpk::view_const_string				jsSearch							=
 	"\nfunction obeSearch(textToFind) {"
+	"\n var selectBarrio	= document.getElementById('selectBarrio');"
+	"\n var selectedOption	= selectBarrio.selectedIndex;"
+	"\n var selectedBarrio	= selectedOption - 1;//selectBarrio.options[selectedOption].text;"
 	"\n var lowerToFind		= textToFind.toLowerCase();"
 	"\n	var wordsToFind		= lowerToFind.split(' ');"
 	"\n	var pos				= 0;"
@@ -21,7 +24,18 @@ static	const ::gpk::view_const_string				jsSearch							=
 	"\n			if(names[pos].indexOf(toFind) > -1) {"
 	"\n				var idc = 0;"
 	"\n				for(idc = 0; idc < indices[pos].length; idc++)"
-	"\n					document.getElementById(indices[pos][idc]).style.visibility = 'visible';"
+	"\n					var idArticle = indices[pos][idc];"
+	"\n					if(selectedBarrio != '-1') {"
+	"\n						var iBarrio = 0;"
+	"\n						for(iBarrio = 0; iBarrio < barrioIdMap[idArticle].length; iBarrio++) {"
+	"\n							if(selectedBarrio == barrioIdMap[idArticle][iBarrio]) {"
+	"\n								document.getElementById(idArticle).style.visibility = 'visible';"
+	"\n								break;"
+	"\n							}"
+	"\n						}"
+	"\n					}"
+	"\n					else"
+	"\n						document.getElementById(idArticle).style.visibility = 'visible';"
 	"\n			}"
 	"\n		}"
 	"\n	}"
@@ -159,18 +173,15 @@ static	::gpk::error_t								outputSearchScript					(const ::gpk::view_array<con
 	output.append(::gpk::view_const_string{"];"});
 
 	output.append(::gpk::view_const_string{"\nvar indices=["});
-	::gpk::array_pod<char_t>								base64Id;
 	char													tempIntStr[256]				= {};
 	for(uint32_t iWord = 0; iWord < wordSet.size(); ++iWord) {
 		const SWordIndices		& element = wordSet[iWord];
 		output.push_back('[');
 		for(uint32_t iArticle = 0; iArticle < element.Indices.size(); ++iArticle) {
-			base64Id.clear();
 			sprintf_s(tempIntStr, "%u", element.Indices[iArticle]);
-			::gpk::base64EncodeFS(::gpk::view_const_string{tempIntStr}, base64Id);
 
 			output.push_back('\'');
-			output.append(::gpk::view_const_string{base64Id.begin(), base64Id.size()});
+			output.append(::gpk::view_const_string{tempIntStr});
 			output.push_back('\'');
 			if(iArticle < (element.Indices.size() - 1))
 				output.push_back(',');
@@ -183,11 +194,9 @@ static	::gpk::error_t								outputSearchScript					(const ::gpk::view_array<con
 
 	output.append(::gpk::view_const_string{"\nvar idList=["});
 	for(uint32_t iArticle = 0; iArticle < indicesToDisplay.size(); ++iArticle) {
-		base64Id.clear();
 		sprintf_s(tempIntStr, "%u", iArticle);
-		::gpk::base64EncodeFS(::gpk::view_const_string{tempIntStr}, base64Id);
 		output.push_back('\'');
-		output.append(::gpk::view_const_string{base64Id.begin(), base64Id.size()});
+		output.append(::gpk::view_const_string{tempIntStr});
 		output.push_back('\'');
 		if(iArticle < (indicesToDisplay.size() - 1))
 			output.push_back(',');
@@ -281,10 +290,8 @@ static ::gpk::error_t								htmlBoardGenerate					(const ::gpk::view_array<cons
 			const SItemViews										& views						= indicesToDisplay[iItem];
 			base64Id.clear();
 			sprintf_s(tempIntStr, "%u", iItem);
-			::gpk::base64EncodeFS(::gpk::view_const_string{tempIntStr}, base64Id);
-
 			output.append(::gpk::view_const_string{"\n<tr id=\""});
-			output.append(::gpk::view_const_string{base64Id.begin(), base64Id.size()});
+			output.append(::gpk::view_const_string{tempIntStr});
 			output.append(::gpk::view_const_string{"\">"});
 			output.append(::gpk::view_const_string{"\n<td style=\"width:100%;text-align:left;vertical-align:top;\">"});
 			//
