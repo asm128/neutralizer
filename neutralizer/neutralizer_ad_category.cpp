@@ -258,31 +258,45 @@ static ::gpk::error_t								htmlBoardGenerate					(const ::gpk::view_array<cons
 	//"\n<img src=\"/obelisco/image/blank.png\"/>"
 		"\n</td>"
 		"\n<td style=\"position:sticky;left:0px;top:0px;width:100%;text-align:left;vertical-align:top;\">"
-		"<input oninput=\"if(this.value.length > 0) obeSearch(this.value); else clearSearch();\" style=\"position:sticky;left:0px;top:0px;font-size:24px;border-width:1px;width:50%;text-align:left;border-style:solid;border-radius:8px;\" type=\"text\"></input>"
+		"<input oninput=\"if(this.value.length > 0) obeSearch(this.value); else clearSearch();\" style=\"position:sticky;height:100%;font-size:24px;border-width:1px;width:50%;text-align:left;border-style:solid;border-radius:8px;\" type=\"text\"></input>"
 		"\n</td>"
 		});
 
-	//output.append(::gpk::view_const_string{"\n<td style=\"font-weight:bold;font-size:"});
-	//output.append(::gpk::view_const_string{fontSize});
-	//output.append(::gpk::view_const_string{ "px;\" >"});
-	//output.append(::gpk::view_const_string{"<h4>Barrio:<h4>"});
-	//output.append(::gpk::view_const_string{"</td>"});
-	//output.append(::gpk::view_const_string{
-	//	"\n<td>"
-	//	"<select id=\"testSelect1\" style=\"font-size:"
-	//	});
-	//output.append(::gpk::view_const_string{fontSize});
-	//output.append(::gpk::view_const_string{ "px;\" >"});
-	//
-	//::gpk::SJSONFile			barrios;
-	//
-	//output.append(::gpk::view_const_string{
-	//	"  <option value=\"1\"  style=\"\">Montserrat</option>"
-	//	});
-	//output.append(::gpk::view_const_string{
-	//	"</select>"
-	//	"\n</td>"
-	//	});
+	output.append(::gpk::view_const_string{"\n<td style=\"font-weight:bold;font-size:"});
+	output.append(::gpk::view_const_string{fontSize});
+	output.append(::gpk::view_const_string{ "px;\" >"});
+	output.append(::gpk::view_const_string{"<h5>Barrio:<h5>"});
+	output.append(::gpk::view_const_string{"</td>"});
+	output.append(::gpk::view_const_string{
+		"\n<td>"
+		"<select id=\"testSelect1\" style=\"font-size:"
+		});
+	output.append(::gpk::view_const_string{fontSize});
+	output.append(::gpk::view_const_string{ "px;\" >"});
+
+	::gpk::SJSONFile										barrios							;
+	::gpk::jsonFileRead(barrios, "barrios.json");
+	const ::gpk::error_t									countBarrios					= ::gpk::jsonArraySize(*barrios.Reader[0]);
+	char													tempBarrioOption[256]			= {};
+	::gpk::view_const_string								barrioName;
+	if(lang == ::gpk::view_const_string{"es"})
+		output.append(::gpk::view_const_string{"\n<option value=\"-1\" style=\"\">Todos</option>"});
+	else
+		output.append(::gpk::view_const_string{"\n<option value=\"-1\" style=\"\">All</option>"});
+	for(int32_t iBarrio = 0; iBarrio < countBarrios; ++iBarrio) {
+		int32_t													indexBarrioNode					= ::gpk::jsonArrayValueGet(*barrios.Reader[0], iBarrio);
+		int32_t													indexBarrioName					= ::gpk::jsonObjectValueGet(*barrios.Reader[indexBarrioNode], barrios.Reader.View, "name");
+		sprintf_s(tempBarrioOption, "\n<option value=\"%u\" style=\"\">", iBarrio);
+		output.append(::gpk::view_const_string{tempBarrioOption});
+		output.append(barrios.Reader.View[indexBarrioName]);
+		output.append(::gpk::view_const_string{"</option>"});
+	}
+
+	output.append(::gpk::view_const_string{
+		"</select>"
+		"\n</td>"
+		});
+
 	output.append(::gpk::view_const_string{
 		"\n</tr>"
 		"\n</table>"
