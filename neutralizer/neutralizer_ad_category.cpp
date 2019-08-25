@@ -248,11 +248,11 @@ static ::gpk::error_t								htmlBoardGenerate					(const ::gpk::view_array<cons
 			output.append(::gpk::view_const_string{"\">"});
 			output.append(::gpk::view_const_string{"\n<td style=\"width:100%;text-align:left;vertical-align:top;\">"});
 			//
-				output.append(::gpk::view_const_string{"\n<table style=\"width:100%;height:100%;text-align:center;border-style:solid;border-width:2px;border-radius:16px;font-size:"});
+				output.append(::gpk::view_const_string{"\n<table style=\"background-color:white;width:100%;height:100%;min-height:100%;text-align:center;border-style:solid;border-width:2px;border-radius:16px;font-size:"});
 				output.append(fontSize);
 				output.append(::gpk::view_const_string{"px;\" >"});
 				output.append(::gpk::view_const_string{"\n<tr>"});
-				output.append(::gpk::view_const_string{"\n<td style=\"background-color:lightgrey;text-align:left;vertical-align:top;\">"});
+				output.append(::gpk::view_const_string{"\n<td style=\"background-color:lightgrey;border-radius:8px;text-align:left;vertical-align:top;\">"});
 				//
 				::gpk::array_pod<char_t> pTitle;
 				::ntl::htmlTag("h3", views.Title, "style=\"text-align:left;\"", pTitle);
@@ -260,7 +260,7 @@ static ::gpk::error_t								htmlBoardGenerate					(const ::gpk::view_array<cons
 				output.append(::gpk::view_const_string{"\n</td>"});
 				output.append(::gpk::view_const_string{"\n</tr>"});
 				output.append(::gpk::view_const_string{"\n<tr>"});
-				output.append(::gpk::view_const_string{"\n<td style=\"vertical-align:top;background-color:white;height:100%;text-align:left;font-size:"});
+				output.append(::gpk::view_const_string{"\n<td style=\"vertical-align:top;height:100%;text-align:left;font-size:"});
 				output.append(fontSize);
 				output.append(::gpk::view_const_string{ "px;\">"});
 				::ntl::htmlTag("h3", views.Text, "style=\" font-weight:normal;text-align:left;\"", output);
