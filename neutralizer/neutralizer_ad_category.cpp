@@ -7,62 +7,6 @@
 #include "gpk_find.h"
 #include "gpk_stdstring.h"
 
-static	const ::gpk::view_const_string				jsSearch							=
-	"\nfunction obeSearch(textToFind) {"
-	"\n var selectBarrio	= document.getElementById('selectBarrio');"
-	"\n var selectedOption	= selectBarrio.selectedIndex;"
-	"\n var selectedBarrio	= selectedOption - 1;//selectBarrio.options[selectedOption].text;"
-	"\n var lowerToFind		= textToFind.toLowerCase();"
-	"\n	var wordsToFind		= lowerToFind.split(' ');"
-	"\n	var pos				= 0;"
-	"\n	for(pos = 0; pos < idList.length; pos = pos +1)"
-	"\n		document.getElementById(idList[pos]).style.visibility = 'collapse';"
-	"\n	for(pos = 0; pos < names.length; pos = pos +1) {"
-	"\n		for(toFind of wordsToFind) {"
-	"\n			if(' ' === toFind || '' === toFind)	"
-	"\n				continue;		"
-	"\n			if(names[pos].indexOf(toFind) > -1) {"
-	"\n				var idc = 0;"
-	"\n				for(idc = 0; idc < indices[pos].length; idc++)"
-	"\n					var idArticle = indices[pos][idc];"
-	"\n					if(selectedBarrio != '-1') {"
-	"\n						var iBarrio = 0;"
-	"\n						for(iBarrio = 0; iBarrio < barrioIdMap[idArticle].length; iBarrio++) {"
-	"\n							if(selectedBarrio == barrioIdMap[idArticle][iBarrio]) {"
-	"\n								document.getElementById(idArticle).style.visibility = 'visible';"
-	"\n								break;"
-	"\n							}"
-	"\n						}"
-	"\n					}"
-	"\n					else"
-	"\n						document.getElementById(idArticle).style.visibility = 'visible';"
-	"\n			}"
-	"\n		}"
-	"\n	}"
-	"\n}"
-	"\nfunction clearSearch() {"
-	"\n	var selectBarrio	= document.getElementById('selectBarrio');"
-	"\n	var selectedOption	= selectBarrio.selectedIndex;"
-	"\n	var selectedBarrio	= selectedOption - 1;//selectBarrio.options[selectedOption].text;"
-	"\n	if(selectedBarrio == '-1') {"
-	"\n		for(id of idList)"
-	"\n			document.getElementById(id).style.visibility = 'visible';"
-	"\n	}"
-	"\n	else {"
-	"\n		for(id of idList) {"
-	"\n			document.getElementById(id).style.visibility = 'collapse';"
-	"\n			var barrioMap	= barrioIdMap[id];"
-	"\n			for(barrio of barrioMap) {"
-	"\n				if(selectedBarrio == barrio) {"
-	"\n					document.getElementById(id).style.visibility = 'visible';"
-	"\n					break;"
-	"\n				}"
-	"\n			}"
-	"\n		}"
-	"\n	}"
-	"\n}"
-	;
-
 struct SItemViews {
 	uint32_t											ItemIndex					= 0;
 	::gpk::view_const_string							URL							= {};
@@ -79,6 +23,52 @@ struct SItemViews {
 	::gpk::array_obj<::gpk::view_const_string>			Addresses					= {};
 	::gpk::array_obj<::gpk::view_const_string>			WPs							= {};
 };
+
+static	::gpk::error_t								getItemViews						(::gpk::SJSONReader & content, const ::ntl::AD_SHOP_CATEGORY category, const ::gpk::view_const_string & lang, ::gpk::array_obj<::SItemViews> & indicesToDisplay)	{
+	for(int32_t iItem = 0, countItems = ::gpk::jsonArraySize(*content[0]); iItem < countItems; ++iItem) {
+		SItemViews												views								= {(uint32_t)iItem};
+		const ::gpk::error_t									jsonIndexCurrentItem				= ::gpk::jsonArrayValueGet(*content[0], iItem);
+		::gpk::view_const_string								viewWikiCategory					= {};
+		const ::gpk::error_t									jsonIndexArrayCategory				= ::gpk::jsonExpressionResolve("category", content, jsonIndexCurrentItem, viewWikiCategory);
+		bool													isCategory							= false;
+		for(uint32_t iCat = 0, countCat = (uint32_t)::gpk::jsonArraySize(*content[jsonIndexArrayCategory]); iCat < countCat; ++iCat) {
+			const ::gpk::error_t									jsonIndexNodeCategory				= ::gpk::jsonArrayValueGet(*content[jsonIndexArrayCategory], iCat);
+			const ::gpk::SJSONToken									& jsonToken							= content.Token[jsonIndexNodeCategory];
+			if(category == jsonToken.Value) {
+				isCategory											= true;
+				break;
+			}
+		}
+		if(false == isCategory)
+			continue;
+
+		// ---- Root arrays.
+		const ::gpk::error_t									jsonIndexArrayPhone					= ::gpk::jsonExpressionResolve("phone"		, content, jsonIndexCurrentItem, views.MapURL		);
+		const ::gpk::error_t									jsonIndexArrayWP					= ::gpk::jsonExpressionResolve("whatsapp"	, content, jsonIndexCurrentItem, views.MapURL		);
+		const ::gpk::error_t									jsonIndexArrayAddr					= ::gpk::jsonExpressionResolve("address"	, content, jsonIndexCurrentItem, views.MapURL		);
+		const ::gpk::error_t									jsonIndexArrayBarrios				= ::gpk::jsonExpressionResolve("barrio"		, content, jsonIndexCurrentItem, views.MapURL		);
+		// ---- Root properties.
+		const ::gpk::error_t									jsonIndexName						= ::gpk::jsonExpressionResolve("name"		, content, jsonIndexCurrentItem, views.Name		);
+		const ::gpk::error_t									jsonIndexMap						= ::gpk::jsonExpressionResolve("location"	, content, jsonIndexCurrentItem, views.MapURL		);
+		// ---- Language-based properties.
+		const ::gpk::error_t									jsonIndexLang						= ::gpk::jsonExpressionResolve(lang			, content, jsonIndexCurrentItem, views.URL		);
+		const ::gpk::error_t									jsonIndexWiki						= ::gpk::jsonExpressionResolve("wiki"		, content, jsonIndexLang, views.URL				);
+		const ::gpk::error_t									jsonIndexTitle						= ::gpk::jsonExpressionResolve("title"		, content, jsonIndexLang, views.Title				);
+		const ::gpk::error_t									jsonIndexText						= ::gpk::jsonExpressionResolve("text"		, content, jsonIndexLang, views.Text				);
+		const ::gpk::error_t									jsonIndexImageHRef					= ::gpk::jsonExpressionResolve("image.href"	, content, jsonIndexLang, views.ImageHRef			);
+		const ::gpk::error_t									jsonIndexImageSrc					= ::gpk::jsonExpressionResolve("image.src"	, content, jsonIndexLang, views.ImageSrc			);
+		const ::gpk::error_t									jsonIndexImageTitle					= ::gpk::jsonExpressionResolve("image.title", content, jsonIndexLang, views.ImageTitle		);
+		const ::gpk::error_t									jsonIndexImageAlt					= ::gpk::jsonExpressionResolve("image.alt"	, content, jsonIndexLang, views.ImageAlt			);
+
+		for(int32_t iPhone	= 0, countAddr		= ::gpk::jsonArraySize(*content[jsonIndexArrayAddr		]); iPhone	< countAddr		; ++iPhone	)	views.Addresses	.push_back(content.View[::gpk::jsonArrayValueGet(*content[jsonIndexArrayAddr	], iPhone	)]);
+		for(int32_t iPhone	= 0, countPhones	= ::gpk::jsonArraySize(*content[jsonIndexArrayPhone		]); iPhone	< countPhones	; ++iPhone	)	views.Phones	.push_back(content.View[::gpk::jsonArrayValueGet(*content[jsonIndexArrayPhone	], iPhone	)]);
+		for(int32_t iPhone	= 0, countWPs		= ::gpk::jsonArraySize(*content[jsonIndexArrayWP		]); iPhone	< countWPs		; ++iPhone	)	views.WPs		.push_back(content.View[::gpk::jsonArrayValueGet(*content[jsonIndexArrayWP		], iPhone	)]);
+		for(int32_t iBarrio	= 0, countBarrios	= ::gpk::jsonArraySize(*content[jsonIndexArrayBarrios	]); iBarrio	< countBarrios	; ++iBarrio	)	views.Barrio	.push_back((uint32_t)content.Token[::gpk::jsonArrayValueGet(*content[jsonIndexArrayBarrios], iBarrio	)].Value);
+
+		gpk_necall(indicesToDisplay.push_back(views), "%s", "Out of memory?");
+	}
+	return 0;
+}
 
 static	::gpk::error_t								getWordList							(const ::SItemViews& item, ::gpk::array_obj<::gpk::array_pod<char_t>> & itemWords) {
 	::gpk::array_obj<::gpk::view_const_string>				upper								= {};
@@ -236,53 +226,6 @@ static	::gpk::error_t								outputSearchScript					(const ::gpk::view_array<con
 			output.push_back(',');
 	}
 	output.append(::gpk::view_const_string{"];"});
-	output.append(jsSearch);
-	return 0;
-}
-
-static	::gpk::error_t								getItemViews						(::gpk::SJSONReader & content, const ::ntl::AD_SHOP_CATEGORY category, const ::gpk::view_const_string & lang, ::gpk::array_obj<::SItemViews> & indicesToDisplay)	{
-	for(int32_t iItem = 0, countItems = ::gpk::jsonArraySize(*content[0]); iItem < countItems; ++iItem) {
-		SItemViews												views								= {(uint32_t)iItem};
-		const ::gpk::error_t									jsonIndexCurrentItem				= ::gpk::jsonArrayValueGet(*content[0], iItem);
-		::gpk::view_const_string								viewWikiCategory					= {};
-		const ::gpk::error_t									jsonIndexArrayCategory				= ::gpk::jsonExpressionResolve("category", content, jsonIndexCurrentItem, viewWikiCategory);
-		bool													isCategory							= false;
-		for(uint32_t iCat = 0, countCat = (uint32_t)::gpk::jsonArraySize(*content[jsonIndexArrayCategory]); iCat < countCat; ++iCat) {
-			const ::gpk::error_t									jsonIndexNodeCategory				= ::gpk::jsonArrayValueGet(*content[jsonIndexArrayCategory], iCat);
-			const ::gpk::SJSONToken									& jsonToken							= content.Token[jsonIndexNodeCategory];
-			if(category == jsonToken.Value) {
-				isCategory											= true;
-				break;
-			}
-		}
-		if(false == isCategory)
-			continue;
-
-		// ---- Root arrays.
-		const ::gpk::error_t									jsonIndexArrayPhone					= ::gpk::jsonExpressionResolve("phone"		, content, jsonIndexCurrentItem, views.MapURL		);
-		const ::gpk::error_t									jsonIndexArrayWP					= ::gpk::jsonExpressionResolve("whatsapp"	, content, jsonIndexCurrentItem, views.MapURL		);
-		const ::gpk::error_t									jsonIndexArrayAddr					= ::gpk::jsonExpressionResolve("address"	, content, jsonIndexCurrentItem, views.MapURL		);
-		const ::gpk::error_t									jsonIndexArrayBarrios				= ::gpk::jsonExpressionResolve("barrio"		, content, jsonIndexCurrentItem, views.MapURL		);
-		// ---- Root properties.
-		const ::gpk::error_t									jsonIndexName						= ::gpk::jsonExpressionResolve("name"		, content, jsonIndexCurrentItem, views.Name		);
-		const ::gpk::error_t									jsonIndexMap						= ::gpk::jsonExpressionResolve("location"	, content, jsonIndexCurrentItem, views.MapURL		);
-		// ---- Language-based properties.
-		const ::gpk::error_t									jsonIndexLang						= ::gpk::jsonExpressionResolve(lang			, content, jsonIndexCurrentItem, views.URL		);
-		const ::gpk::error_t									jsonIndexWiki						= ::gpk::jsonExpressionResolve("wiki"		, content, jsonIndexLang, views.URL				);
-		const ::gpk::error_t									jsonIndexTitle						= ::gpk::jsonExpressionResolve("title"		, content, jsonIndexLang, views.Title				);
-		const ::gpk::error_t									jsonIndexText						= ::gpk::jsonExpressionResolve("text"		, content, jsonIndexLang, views.Text				);
-		const ::gpk::error_t									jsonIndexImageHRef					= ::gpk::jsonExpressionResolve("image.href"	, content, jsonIndexLang, views.ImageHRef			);
-		const ::gpk::error_t									jsonIndexImageSrc					= ::gpk::jsonExpressionResolve("image.src"	, content, jsonIndexLang, views.ImageSrc			);
-		const ::gpk::error_t									jsonIndexImageTitle					= ::gpk::jsonExpressionResolve("image.title", content, jsonIndexLang, views.ImageTitle		);
-		const ::gpk::error_t									jsonIndexImageAlt					= ::gpk::jsonExpressionResolve("image.alt"	, content, jsonIndexLang, views.ImageAlt			);
-
-		for(int32_t iPhone	= 0, countAddr		= ::gpk::jsonArraySize(*content[jsonIndexArrayAddr		]); iPhone	< countAddr		; ++iPhone	)	views.Addresses	.push_back(content.View[::gpk::jsonArrayValueGet(*content[jsonIndexArrayAddr	], iPhone	)]);
-		for(int32_t iPhone	= 0, countPhones	= ::gpk::jsonArraySize(*content[jsonIndexArrayPhone		]); iPhone	< countPhones	; ++iPhone	)	views.Phones	.push_back(content.View[::gpk::jsonArrayValueGet(*content[jsonIndexArrayPhone	], iPhone	)]);
-		for(int32_t iPhone	= 0, countWPs		= ::gpk::jsonArraySize(*content[jsonIndexArrayWP		]); iPhone	< countWPs		; ++iPhone	)	views.WPs		.push_back(content.View[::gpk::jsonArrayValueGet(*content[jsonIndexArrayWP		], iPhone	)]);
-		for(int32_t iBarrio	= 0, countBarrios	= ::gpk::jsonArraySize(*content[jsonIndexArrayBarrios	]); iBarrio	< countBarrios	; ++iBarrio	)	views.Barrio	.push_back((uint32_t)content.Token[::gpk::jsonArrayValueGet(*content[jsonIndexArrayBarrios], iBarrio	)].Value);
-
-		gpk_necall(indicesToDisplay.push_back(views), "%s", "Out of memory?");
-	}
 	return 0;
 }
 
@@ -429,7 +372,7 @@ static ::gpk::error_t								htmlBoardGenerate					(const ::gpk::view_array<cons
 	return 0;
 }
 
-::gpk::error_t								ntl::pageCatalog					(const ::gpk::view_const_string & contentFileName, const ::gpk::SCoord2<uint32_t> screenSize, const ::gpk::view_const_string & pathStyles, const AD_SHOP_CATEGORY category, const ::gpk::view_const_string & title, const ::gpk::view_const_string & lang, ::gpk::array_pod<char_t> & output) {
+::gpk::error_t								ntl::pageCatalog					(const ::gpk::view_const_string & contentFileName, const ::gpk::view_const_string & pathScript, const ::gpk::SCoord2<uint32_t> screenSize, const ::gpk::view_const_string & pathStyles, const AD_SHOP_CATEGORY category, const ::gpk::view_const_string & title, const ::gpk::view_const_string & lang, ::gpk::array_pod<char_t> & output) {
 
 	output.append(::gpk::view_const_string{ "\n<html>"});
 	// --- Head
@@ -546,6 +489,10 @@ static ::gpk::error_t								htmlBoardGenerate					(const ::gpk::view_array<cons
 	output.append(::gpk::view_const_string{"\n<script charset=\"iso-8859-1\">"});
 	::outputSearchScript(indicesToDisplay, output);
 	output.append(::gpk::view_const_string{"\n</script>"});
+
+	::gpk::array_pod<char_t>								fileScriptMenu;
+	::ntl::httpPath(pathScript, "filter", "js", fileScriptMenu);
+	::ntl::htmlHeaderScriptFile({fileScriptMenu.begin(), fileScriptMenu.size()}, output);
 
 	output.append(::gpk::view_const_string{
 		"\n</td>"

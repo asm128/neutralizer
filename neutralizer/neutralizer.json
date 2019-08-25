@@ -1,38 +1,4 @@
-{	"obelisco" : 
-	{	"front"	: 
-		{	"title": "Obelisco - Un Patrimonio Incalculable"
-		,	"http" : 
-			{	"path"			: // Paths have to start with a / and will be relative to (appended at the end of) "root" 
-				{	"root"			: "/obelisco"	// This is the root path of the applicaiton. It's used as basis for 
-				,	"exe"			: "/debug"		// 
-				,	"image"			: "/image"	
-				,	"css"			: "/css"		
-				,	"js"			: "/js"		
-		 		}
-			}
-		,	"extension" : 
-			{	"image"				: "png"
-			,	"program"			: "exe"
-			} 
-		}
-	,	"back"	: 
-		{	"http" : 
-			{	"domain"			: "asm128.com"
-			,	"path"				: "/debug/obelisco/asterisco.exe"
-			,	"port"				: "80"
-			}
-		,	"https" : 
-			{	"https_address"		: "asm128.com"
-			,	"https_port"		: "443"
-			,	"path"				: "/debug/obelisco/asterisco.exe"
-			}
-		,	"udp" : 
-			{	"udp_lan_address"	: "192.168.0.2"
-			,	"udp_lan_port"		: "9797"
-			}
-		}
-	}
-,	"tuobelisco" : 
+{	"tuobelisco" : 
 	{	"front"	: 
 		{	"title": "TuObelisco.com - Un Patrimonio Incalculable"
 		,	"http" : 
