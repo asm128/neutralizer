@@ -41,8 +41,25 @@ static	const ::gpk::view_const_string				jsSearch							=
 	"\n	}"
 	"\n}"
 	"\nfunction clearSearch() {"
-	"\n	for(id of idList)"
-	"\n		document.getElementById(id).style.visibility = 'visible';"
+	"\n	var selectBarrio	= document.getElementById('selectBarrio');"
+	"\n	var selectedOption	= selectBarrio.selectedIndex;"
+	"\n	var selectedBarrio	= selectedOption - 1;//selectBarrio.options[selectedOption].text;"
+	"\n	if(selectedBarrio == '-1') {"
+	"\n		for(id of idList)"
+	"\n			document.getElementById(id).style.visibility = 'visible';"
+	"\n	}"
+	"\n	else {"
+	"\n		for(id of idList) {"
+	"\n			document.getElementById(id).style.visibility = 'collapse';"
+	"\n			var barrioMap	= barrioIdMap[id];"
+	"\n			for(barrio of barrioMap) {"
+	"\n				if(selectedBarrio == barrio) {"
+	"\n					document.getElementById(id).style.visibility = 'visible';"
+	"\n					break;"
+	"\n				}"
+	"\n			}"
+	"\n		}"
+	"\n	}"
 	"\n}"
 	;
 
@@ -462,7 +479,7 @@ static ::gpk::error_t								htmlBoardGenerate					(const ::gpk::view_array<cons
 	//"\n<img src=\"/obelisco/image/blank.png\"/>"
 		"\n</td>"
 		"\n<td style=\"position:sticky;left:0px;top:0px;width:100%;text-align:left;vertical-align:top;\">"
-		"<input oninput=\"if(this.value.length > 0) obeSearch(this.value); else clearSearch();\" style=\"position:sticky;height:100%;font-size:24px;border-width:1px;width:50%;text-align:left;border-style:solid;border-radius:8px;\" type=\"text\"></input>"
+		"<input id=\"searchBar\" oninput=\"if(this.value.length > 0) obeSearch(this.value); else clearSearch();\" style=\"position:sticky;height:100%;font-size:24px;border-width:1px;width:50%;text-align:left;border-style:solid;border-radius:8px;\" type=\"text\"></input>"
 		"\n</td>"
 		});
 
@@ -475,7 +492,7 @@ static ::gpk::error_t								htmlBoardGenerate					(const ::gpk::view_array<cons
 	output.append(::gpk::view_const_string{"</td>"});
 	output.append(::gpk::view_const_string{
 		"\n<td>"
-		"<select id=\"selectBarrio\" onchange=\"\" style=\"font-size:"
+		"<select id=\"selectBarrio\" onchange=\"var searchBar = document.getElementById('searchBar'); if(searchBar.value.length > 0) obeSearch(searchBar.value); else clearSearch();\" style=\"font-size:"
 		});
 	output.append(::gpk::view_const_string{fontSize});
 	output.append(::gpk::view_const_string{ "px;\" >"});
