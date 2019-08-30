@@ -4,6 +4,15 @@
 
 #include "gpk_json_expression.h"
 
+::gpk::error_t										ntl::loadNTLArgs					(SNTLArgs & out_loaded, const ::gpk::view_array<const ::gpk::TKeyValConstString> & queryStringKeyVals)	{
+	::gpk::find("s", queryStringKeyVals, out_loaded.Session);
+	::gpk::find("l", queryStringKeyVals, out_loaded.Language);
+	::gpk::find("m", queryStringKeyVals, out_loaded.Module);
+	::gpk::find("w", queryStringKeyVals, out_loaded.Width);
+	::gpk::find("h", queryStringKeyVals, out_loaded.Height);
+	return 0;
+}
+
 ::gpk::error_t										ntl::httpPath						(::gpk::view_const_string folder, ::gpk::view_const_string name, ::gpk::view_const_string extension, ::gpk::array_pod<char_t> & output) {
 	output.append(folder);
 	output.push_back('/');
@@ -21,12 +30,11 @@
 	,	::gpk::array_pod<char_t>		& output
 	, bool								iconLarge
 	) {
-
-	char													events		[4096]		= {};
-	::gpk::array_pod<char_t>								iconId					= {};
-	::gpk::array_pod<char_t>								idBase64				= {};
+	char													events		[4096]					= {};
+	::gpk::array_pod<char_t>								iconId								= {};
+	::gpk::array_pod<char_t>								idBase64							= {};
 	{ // Generate id for this icon
-		iconId											= ::gpk::view_const_string{ "id_icon_"};
+		iconId												= ::gpk::view_const_string{"id_icon_"};
 		iconId.append(txtIcon);
 		::gpk::base64EncodeFS(iconId, idBase64);
 	}
@@ -43,23 +51,23 @@
 	output.append(::gpk::view_const_string{ "<image style=\"\"  src=\""	});
 	output.append(pathImages);
 	if(iconLarge)
-		output.append(::gpk::view_const_string{ "/icon_large_"								});
+		output.append(::gpk::view_const_string{"/icon_large_"});
 	else
-		output.append(::gpk::view_const_string{ "/icon_small_"								});
+		output.append(::gpk::view_const_string{"/icon_small_"});
 	output.append(itemName);
 	output.push_back('.');
 	output.append(extension);
-	output.append(::gpk::view_const_string{ "\" />"										});
-	output.append(::gpk::view_const_string{"</td></tr>"										});
+	output.append(::gpk::view_const_string{ "\" />"		});
+	output.append(::gpk::view_const_string{"</td></tr>"	});
 
-	output.append(::gpk::view_const_string{ "<tr >"										});
+	output.append(::gpk::view_const_string{ "<tr >"		});
 	output.append(::gpk::view_const_string{ "<td style=\"max-height:1.5em;font-size:1.5em;\" >"			});
 	output.append(::gpk::view_const_string{ "<p style=\"color:black;max-height:1.5em;font-size:1.5em;\" >"			});
 	output.append(txtIcon);
-	output.append(::gpk::view_const_string{"</p>"										});
-	output.append(::gpk::view_const_string{"</td>"										});
-	output.append(::gpk::view_const_string{ "</tr>"										});
-	output.append(::gpk::view_const_string{ "</table>"									});
+	output.append(::gpk::view_const_string{"</p>"		});
+	output.append(::gpk::view_const_string{"</td>"		});
+	output.append(::gpk::view_const_string{ "</tr>"		});
+	output.append(::gpk::view_const_string{ "</table>"	});
 	return 0;
 }
 
@@ -97,7 +105,6 @@
 	,	::gpk::array_pod<char_t>		& output
 	, bool								iconLarge
 	) {
-
 	char													events		[4096]		= {};
 	::gpk::array_pod<char_t>								iconId					= {};
 	::gpk::array_pod<char_t>								idBase64				= {};
@@ -109,12 +116,12 @@
 	output.append(::gpk::view_const_string{ "\n<table style=\"width: 100%; height: 100%;text-align:center;\" " });
 	output.append(::gpk::view_const_string{" id=\""});
 	output.append(idBase64);
-	output.append(::gpk::view_const_string{"\" onclick=\"reframe('dumMainFrame', '"});
+	output.append(::gpk::view_const_string{"\" onclick=\"reframe('tuMainFrame', '"});
 	output.append(menuItem.Item);
 	output.append(::gpk::view_const_string{"', '"});
 	output.append(menuItem.Program);
 	output.push_back('.');
-	output.append(::gpk::view_const_string{"exe', document.getElementById('frameLang').value);\" "});
+	output.append(::gpk::view_const_string{"exe', document.getElementById('l').value, document.getElementById('s').value);\" "});
 	idBase64.push_back(0);
 	sprintf_s(events, "onmouseout=\"cellColor('%s', null, 0);\" onmouseover=\"cellColor('%s', '#ec8106', 0);\" ", idBase64.begin(), idBase64.begin());
 
@@ -122,28 +129,29 @@
 	output.append(::gpk::view_const_string{" >"});
 
 	output.append(::gpk::view_const_string{ "\n<tr>\n<td>"	});
-	output.append(::gpk::view_const_string{ "\n<image style=\"\"  src=\""	});
+	output.append(::gpk::view_const_string{ "\n<image style=\"\"  src=\""});
 	output.append(pathImages);
 	if(iconLarge)
-		output.append(::gpk::view_const_string{ "/icon_large_"								});
+		output.append(::gpk::view_const_string{"/icon_large_"});
 	else
-		output.append(::gpk::view_const_string{ "/icon_small_"								});
+		output.append(::gpk::view_const_string{"/icon_small_"});
 	output.append(menuItem.Item);
 	output.push_back('.');
 	output.append(extension);
-	output.append(::gpk::view_const_string{ "\" />"										});
-	output.append(::gpk::view_const_string{"\n</td></tr>"										});
+	output.append(::gpk::view_const_string{ "\" />"								});
+	output.append(::gpk::view_const_string{"\n</td></tr>"						});
 
-	output.append(::gpk::view_const_string{ "\n<tr >"										});
-	output.append(::gpk::view_const_string{ "\n<td style=\font-size:1.5em;\" >"			});
+	output.append(::gpk::view_const_string{ "\n<tr >"							});
+	output.append(::gpk::view_const_string{ "\n<td style=\font-size:1.5em;\" >"	});
 	output.append(::gpk::view_const_string{ "\n<p style=\"color:black;font-size:1.5em;\" id=\""			});
 	output.append(menuItem.Item);
-	output.append(::gpk::view_const_string{ "\" >"										});
+	output.append(::gpk::view_const_string{ "\" >"								});
 	output.append(menuItem.Text);
-	output.append(::gpk::view_const_string{"</p>"										});
-	output.append(::gpk::view_const_string{"\n</td>"									});
-	output.append(::gpk::view_const_string{"\n</tr>"									});
-	output.append(::gpk::view_const_string{"\n</table>"									});
+	output.append(::gpk::view_const_string{"</p>"								});
+	output.append(::gpk::view_const_string{"\n</td>"							});
+	output.append(::gpk::view_const_string{"\n</tr>"							});
+
+	output.append(::gpk::view_const_string{"\n</table>"							});
 	return 0;
 }
 
@@ -183,9 +191,9 @@
 	gpk_necall(output.push_back('<')	, "%s", "Out of memory?");
 	gpk_necall(output.append(tagName)	, "%s", "Out of memory?");
 	if(attributes.size()) {
-		gpk_necall(output.push_back(' ')	, "%s", "Out of memory?");
+		gpk_necall(output.push_back(' '), "%s", "Out of memory?");
 		gpk_necall(output.append(attributes), "%s", "Out of memory?");
-		gpk_necall(output.push_back(' ')	, "%s", "Out of memory?");
+		gpk_necall(output.push_back(' '), "%s", "Out of memory?");
 	}
 	gpk_necall(output.push_back('>')	, "%s", "Out of memory?");
 	gpk_necall(output.append(content)	, "%s", "Out of memory?");
@@ -204,12 +212,12 @@
 	gpk_necall(output.push_back('<')	, "%s", "Out of memory?");
 	gpk_necall(output.append(tagName)	, "%s", "Out of memory?");
 	if(attributes.size()) {
-		gpk_necall(output.push_back(' ')	, "%s", "Out of memory?");
+		gpk_necall(output.push_back(' '), "%s", "Out of memory?");
 		gpk_necall(output.append(attributes), "%s", "Out of memory?");
-		gpk_necall(output.push_back(' ')	, "%s", "Out of memory?");
+		gpk_necall(output.push_back(' '), "%s", "Out of memory?");
 	}
-	gpk_necall(output.push_back('/')	, "%s", "Out of memory?");
-	gpk_necall(output.push_back('>')	, "%s", "Out of memory?");
+	gpk_necall(output.push_back('/'), "%s", "Out of memory?");
+	gpk_necall(output.push_back('>'), "%s", "Out of memory?");
 	return 0;
 }
 

@@ -6,6 +6,17 @@
 
 namespace ntl
 {
+	struct SNTLArgs {
+		::gpk::view_const_string					Language;
+		::gpk::view_const_string					Module;
+		::gpk::view_const_string					Session;
+		::gpk::view_const_string					Username;
+		::gpk::view_const_string					Width;
+		::gpk::view_const_string					Height;
+	};
+
+	::gpk::error_t								loadNTLArgs					(SNTLArgs & out_loaded, const ::gpk::view_array<const ::gpk::TKeyValConstString> & queryStringKeyVals);
+
 	struct SHTMLSiteExtension {
 		::gpk::view_const_string					Program						= {};
 		::gpk::view_const_string					Image						= {};

@@ -18,15 +18,9 @@
     <ClInclude Include="neutralizer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="neutralizer_ad_category.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="neutralizer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="neutralizer_ad_category.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
