@@ -38,36 +38,36 @@
 		iconId.append(txtIcon);
 		::gpk::base64EncodeFS(iconId, idBase64);
 	}
-	output.append(::gpk::view_const_string{ "<table style=\"width: 100%; height: 100%;text-align:center;\" " });
-	output.append(::gpk::view_const_string{" id=\""});
+	output.append_string("<table style=\"width: 100%; height: 100%;text-align:center;\" ");
+	output.append_string(" id=\"");
 	output.append(idBase64);
-	output.append(::gpk::view_const_string{"\" "});
+	output.append_string("\" ");
 	idBase64.push_back(0);
 	sprintf_s(events, "onmouseout=\"cellColor('%s', null, 0);\" onmouseover=\"cellColor('%s', '#ec8106', 0);\" ", idBase64.begin(), idBase64.begin());
 	output.append(::gpk::view_const_string{events});
-	output.append(::gpk::view_const_string{" >"});
+	output.append_string(" >");
 
-	output.append(::gpk::view_const_string{ "<tr><td>"	});
-	output.append(::gpk::view_const_string{ "<image style=\"\"  src=\""	});
+	output.append_string("<tr><td>");
+	output.append_string("<image style=\"\"  src=\"");
 	output.append(pathImages);
 	if(iconLarge)
-		output.append(::gpk::view_const_string{"/icon_large_"});
+		output.append_string("/icon_large_");
 	else
-		output.append(::gpk::view_const_string{"/icon_small_"});
+		output.append_string("/icon_small_");
 	output.append(itemName);
 	output.push_back('.');
 	output.append(extension);
-	output.append(::gpk::view_const_string{ "\" />"		});
-	output.append(::gpk::view_const_string{"</td></tr>"	});
+	output.append_string("\" />");
+	output.append_string("</td></tr>");
 
-	output.append(::gpk::view_const_string{ "<tr >"		});
-	output.append(::gpk::view_const_string{ "<td style=\"max-height:1.5em;font-size:1.5em;\" >"			});
-	output.append(::gpk::view_const_string{ "<p style=\"color:black;max-height:1.5em;font-size:1.5em;\" >"			});
+	output.append_string("<tr >");
+	output.append_string("<td style=\"max-height:1.5em;font-size:1.5em;\" >");
+	output.append_string("<p style=\"color:black;max-height:1.5em;font-size:1.5em;\" >");
 	output.append(txtIcon);
-	output.append(::gpk::view_const_string{"</p>"		});
-	output.append(::gpk::view_const_string{"</td>"		});
-	output.append(::gpk::view_const_string{ "</tr>"		});
-	output.append(::gpk::view_const_string{ "</table>"	});
+	output.append_string("</p>");
+	output.append_string("</td>");
+	output.append_string("</tr>");
+	output.append_string("</table>");
 	return 0;
 }
 
@@ -78,22 +78,22 @@
 	, ::gpk::array_pod<char_t>							& output
 	, bool												iconsLarge
 	) {
-	output.append(::gpk::view_const_string{ "<table style=\"width:100%;height:100%;\" >"		});	// 181830
-	output.append(::gpk::view_const_string{ "<tr style=\"height:100%; \">"			});
+	output.append_string("<table style=\"width:100%;height:100%;\" >");	// 181830
+	output.append_string("<tr style=\"height:100%; \">");
 	char													iconWidth	[32]		= {};
 	const double											iconWidthPercent		= 100 / menuItems.size();
 	sprintf_s(iconWidth, "%f%%", iconWidthPercent);
 	for(uint32_t iItem = 0; iItem < menuItems.size(); ++iItem) {
 		const ::ntl::SHTMLIcon									currentItem				= menuItems[iItem];
-		output.append(::gpk::view_const_string{"<td style=\"height:100%;width:"});
+		output.append_string("<td style=\"height:100%;width:");
 		output.append(::gpk::view_const_string{iconWidth});
-		output.append(::gpk::view_const_string{"\" >"});
+		output.append_string("\" >");
 
 		::ntl::htmlMenuIcon(pathImages, extensionImages, currentItem.Item, currentItem.Text, output, iconsLarge);	// ------ Unknown icon
-		output.append(::gpk::view_const_string{"</td>"});
+		output.append_string("</td>");
 	}
-	output.append(::gpk::view_const_string{"</tr>"			});
-	output.append(::gpk::view_const_string{"</table>"		});
+	output.append_string("</tr>");
+	output.append_string("</table>");
 	return 0;
 }
 
@@ -113,45 +113,45 @@
 		iconId.append(menuItem.Text);
 		::gpk::base64EncodeFS(iconId, idBase64);
 	}
-	output.append(::gpk::view_const_string{ "\n<table style=\"width: 100%; height: 100%;text-align:center;\" " });
-	output.append(::gpk::view_const_string{" id=\""});
+	output.append_string("\n<table style=\"width: 100%; height: 100%;text-align:center;\" ");
+	output.append_string(" id=\"");
 	output.append(idBase64);
-	output.append(::gpk::view_const_string{"\" onclick=\"reframe('tuMainFrame', '"});
+	output.append_string("\" onclick=\"reframe('tuMainFrame', '");
 	output.append(menuItem.Item);
-	output.append(::gpk::view_const_string{"', '"});
+	output.append_string("', '");
 	output.append(menuItem.Program);
 	output.push_back('.');
-	output.append(::gpk::view_const_string{"exe', document.getElementById('l').value, document.getElementById('s').value);\" "});
+	output.append_string("exe', document.getElementById('l').value, document.getElementById('s').value);\" ");
 	idBase64.push_back(0);
 	sprintf_s(events, "onmouseout=\"cellColor('%s', null, 0);\" onmouseover=\"cellColor('%s', '#ec8106', 0);\" ", idBase64.begin(), idBase64.begin());
 
 	output.append(::gpk::view_const_string{events});
-	output.append(::gpk::view_const_string{" >"});
+	output.append_string(" >");
 
-	output.append(::gpk::view_const_string{ "\n<tr>\n<td>"	});
-	output.append(::gpk::view_const_string{ "\n<image style=\"\"  src=\""});
+	output.append_string("\n<tr>\n<td>");
+	output.append_string("\n<image style=\"\"  src=\"");
 	output.append(pathImages);
 	if(iconLarge)
-		output.append(::gpk::view_const_string{"/icon_large_"});
+		output.append_string("/icon_large_");
 	else
-		output.append(::gpk::view_const_string{"/icon_small_"});
+		output.append_string("/icon_small_");
 	output.append(menuItem.Item);
 	output.push_back('.');
 	output.append(extension);
-	output.append(::gpk::view_const_string{ "\" />"								});
-	output.append(::gpk::view_const_string{"\n</td></tr>"						});
+	output.append_string("\" />");
+	output.append_string("\n</td></tr>");
 
-	output.append(::gpk::view_const_string{ "\n<tr >"							});
-	output.append(::gpk::view_const_string{ "\n<td style=\font-size:1.5em;\" >"	});
-	output.append(::gpk::view_const_string{ "\n<p style=\"color:black;font-size:1.5em;\" id=\""			});
+	output.append_string("\n<tr >");
+	output.append_string("\n<td style=\font-size:1.5em;\" >");
+	output.append_string("\n<p style=\"color:black;font-size:1.5em;\" id=\"");
 	output.append(menuItem.Item);
-	output.append(::gpk::view_const_string{ "\" >"								});
+	output.append_string("\" >");
 	output.append(menuItem.Text);
-	output.append(::gpk::view_const_string{"</p>"								});
-	output.append(::gpk::view_const_string{"\n</td>"							});
-	output.append(::gpk::view_const_string{"\n</tr>"							});
+	output.append_string("</p>");
+	output.append_string("\n</td>");
+	output.append_string("\n</tr>");
 
-	output.append(::gpk::view_const_string{"\n</table>"							});
+	output.append_string("\n</table>");
 	return 0;
 }
 
@@ -162,22 +162,22 @@
 	, ::gpk::array_pod<char_t>							& output
 	, bool												iconsLarge
 	) {
-	output.append(::gpk::view_const_string{ "\n<table style=\"width:100%;height:100%;\" >"		});	// 181830
-	output.append(::gpk::view_const_string{ "\n<tr style=\"height:100%; \">"			});
+	output.append_string("\n<table style=\"width:100%;height:100%;\" >");	// 181830
+	output.append_string("\n<tr style=\"height:100%; \">");
 	char													iconWidth	[32]		= {};
 	const double											iconWidthPercent		= 100 / menuItems.size();
 	sprintf_s(iconWidth, "%f%%", iconWidthPercent);
 	for(uint32_t iItem = 0; iItem < menuItems.size(); ++iItem) {
 		const ::ntl::SHTMLIcon									currentItem				= menuItems[iItem];
-		output.append(::gpk::view_const_string{"\n<td style=\"height:100%;width:"});
+		output.append_string("\n<td style=\"height:100%;width:");
 		output.append(::gpk::view_const_string{iconWidth});
-		output.append(::gpk::view_const_string{"\" >"});
+		output.append_string("\" >");
 
 		::ntl::htmlControlMenuIcon(pathImages, extensionImages, currentItem, output, iconsLarge);	// ------ Unknown icon
-		output.append(::gpk::view_const_string{"\n</td>"});
+		output.append_string("\n</td>");
 	}
-	output.append(::gpk::view_const_string{"\n</tr>"			});
-	output.append(::gpk::view_const_string{"\n</table>"		});
+	output.append_string("\n</tr>");
+	output.append_string("\n</table>");
 	return 0;
 }
 
