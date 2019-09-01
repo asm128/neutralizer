@@ -188,9 +188,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="neutralizer.h" />
+    <ClInclude Include="ntl_session.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="neutralizer.cpp" />
+    <ClCompile Include="ntl_session.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="neutralizer.bat" />
