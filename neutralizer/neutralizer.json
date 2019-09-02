@@ -27,9 +27,16 @@
 			,	"path"				: "/module/obelisco/asterisco.exe"
 			}
 		,	"udp" : 
-			{	"udp_lan_address"	: "192.168.0.2"
+			{	"udp_lan_address"	: "192.168.0.3"
 			,	"udp_lan_port"		: "9797"
 			}
+		,	"data" : 
+			{	"path"			: 
+				{	"session"	: "./session"
+				,	"user"		: "./user"
+				,	"database"	: "./tudb"
+			 	}
+		 	}
 		}
 	}
 ,	"dumgo" : 

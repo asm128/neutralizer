@@ -187,11 +187,11 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="neutralizer.h" />
+    <ClInclude Include="ntl_front.h" />
     <ClInclude Include="ntl_session.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="neutralizer.cpp" />
+    <ClCompile Include="ntl_front.cpp" />
     <ClCompile Include="ntl_session.cpp" />
   </ItemGroup>
   <ItemGroup>

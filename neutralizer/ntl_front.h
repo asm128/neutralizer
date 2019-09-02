@@ -43,9 +43,9 @@ namespace ntl
 	};
 
 	struct SHTMLIcon {
-				::gpk::view_const_string			Item	;
-				::gpk::view_const_string			Program	;
-				::gpk::view_const_string			Text	;
+		::gpk::view_const_string					Item	;
+		::gpk::view_const_string					Program	;
+		::gpk::view_const_string					Text	;
 	};
 
 	::gpk::error_t								htmlTag

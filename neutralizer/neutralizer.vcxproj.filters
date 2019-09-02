@@ -15,18 +15,18 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="neutralizer.h">
+    <ClInclude Include="ntl_session.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ntl_session.h">
+    <ClInclude Include="ntl_front.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="neutralizer.cpp">
+    <ClCompile Include="ntl_session.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ntl_session.cpp">
+    <ClCompile Include="ntl_front.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
