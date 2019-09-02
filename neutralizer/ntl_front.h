@@ -95,17 +95,17 @@ namespace ntl
 		);
 
 
-	static inline ::gpk::error_t				htmlHeaderTitle		(const ::gpk::view_const_string	& content	, ::gpk::array_pod<char_t> & output) { return ::ntl::htmlTag("title", content, {}, output); }
-	static inline ::gpk::error_t				htmlHeaderScript	(const ::gpk::view_const_string	& content	, ::gpk::array_pod<char_t> & output) { return ::ntl::htmlTag("script", content, {}, output); }
-	static inline ::gpk::error_t				htmlHeaderStyle		(const ::gpk::view_const_string	& content	, ::gpk::array_pod<char_t> & output) { return ::ntl::htmlTag("style", content, " type=\"text/css\" ", output); }
-	static inline ::gpk::error_t				htmlHeaderScriptFile(const ::gpk::view_const_string	& file		, ::gpk::array_pod<char_t> & output) {
+	static inline ::gpk::error_t				htmlHeaderTitle		(const ::gpk::view_const_string	& content	, ::gpk::array_pod<char_t> & output)	{ return ::ntl::htmlTag("title", content, {}, output); }
+	static inline ::gpk::error_t				htmlHeaderScript	(const ::gpk::view_const_string	& content	, ::gpk::array_pod<char_t> & output)	{ return ::ntl::htmlTag("script", content, {}, output); }
+	static inline ::gpk::error_t				htmlHeaderStyle		(const ::gpk::view_const_string	& content	, ::gpk::array_pod<char_t> & output)	{ return ::ntl::htmlTag("style", content, " type=\"text/css\" ", output); }
+	static inline ::gpk::error_t				htmlHeaderScriptFile(const ::gpk::view_const_string	& file		, ::gpk::array_pod<char_t> & output)	{
 		::gpk::array_pod<char_t>						src					= ::gpk::view_const_string{"type=\"text/javascript\" src=\""};
 		src.append(file);
 		src.push_back('"');
 		return ::ntl::htmlTag("script", {}, {src.begin(), src.size()}, output);
 	}
 
-	static inline ::gpk::error_t				htmlHeaderStyleLink	(const ::gpk::view_const_string	& file		, ::gpk::array_pod<char_t> & output) {
+	static inline ::gpk::error_t				htmlHeaderStyleLink	(const ::gpk::view_const_string	& file		, ::gpk::array_pod<char_t> & output)	{
 		::gpk::array_pod<char_t>						src					= ::gpk::view_const_string{" rel=\"stylesheet\" type=\"text/css\" href=\""};
 		src.append(file);
 		src.push_back('"');
@@ -126,7 +126,7 @@ namespace ntl
 
 	::gpk::error_t								httpPath			(::gpk::view_const_string folder, ::gpk::view_const_string name, ::gpk::view_const_string extension, ::gpk::array_pod<char_t> & output);
 
-	::gpk::error_t								loadConfig			(::ntl::SHTMLEndpoint & programState, int32_t indexRoot);
+	::gpk::error_t								frontConfigLoad		(::ntl::SHTMLEndpoint & programState, int32_t indexRoot);
 } // namespace
 
 #endif // NEUTRALIZER_H_2903874928374

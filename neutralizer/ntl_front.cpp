@@ -230,7 +230,7 @@ static	::gpk::error_t							loadPath						(::gpk::view_const_string rootPart, co
 	return 0;
 }
 
-::gpk::error_t									ntl::loadConfig					(::ntl::SHTMLEndpoint & programState, int32_t indexRoot)	{
+::gpk::error_t									ntl::frontConfigLoad					(::ntl::SHTMLEndpoint & programState, int32_t indexRoot)	{
 	if(-1 == indexRoot) {
 		::gpk::view_const_string						rootNode;
 		indexRoot									= ::gpk::jsonExpressionResolve("neutralizer", programState.Config.Reader, 0, rootNode);
