@@ -226,7 +226,7 @@ static	::gpk::error_t							loadPath						(::gpk::view_const_string rootPart, co
 	path											= rootPart;
 	::gpk::jsonExpressionResolve(expression, reader, indexRoot, pathPart);
 	path.append(pathPart);
-	output											= ::gpk::label(path.begin(), (uint32_t)-1);
+	output											= ::gpk::label(path.begin(), path.size());
 	return 0;
 }
 
