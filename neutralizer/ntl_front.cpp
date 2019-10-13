@@ -13,7 +13,7 @@
 	return 0;
 }
 
-::gpk::error_t										ntl::httpPath						(::gpk::view_const_string folder, ::gpk::view_const_string name, ::gpk::view_const_string extension, ::gpk::array_pod<char_t> & output) {
+::gpk::error_t										ntl::httpPath						(::gpk::view_const_char folder, ::gpk::view_const_string name, ::gpk::view_const_char extension, ::gpk::array_pod<char_t> & output) {
 	output.append(folder);
 	output.push_back('/');
 	output.append(name);
@@ -23,10 +23,10 @@
 }
 
 ::gpk::error_t										ntl::htmlMenuIcon
-	(	const ::gpk::view_const_string	& pathImages
-	,	const ::gpk::view_const_string	& extension
-	,	const ::gpk::view_const_string	& itemName
-	,	const ::gpk::view_const_string	& txtIcon
+	(	const ::gpk::view_const_char	& pathImages
+	,	const ::gpk::view_const_char	& extension
+	,	const ::gpk::view_const_char	& itemName
+	,	const ::gpk::view_const_char	& txtIcon
 	,	::gpk::array_pod<char_t>		& output
 	, bool								iconLarge
 	) {
@@ -73,8 +73,8 @@
 
 ::gpk::error_t									ntl::htmlMenuIconsHorizontal
 	( const ::gpk::view_array<const ::ntl::SHTMLIcon>	& menuItems
-	, const ::gpk::view_const_string					& pathImages
-	, const ::gpk::view_const_string					& extensionImages
+	, const ::gpk::view_const_char						& pathImages
+	, const ::gpk::view_const_char						& extensionImages
 	, ::gpk::array_pod<char_t>							& output
 	, bool												iconsLarge
 	) {
@@ -99,8 +99,8 @@
 
 
 ::gpk::error_t										ntl::htmlControlMenuIcon
-	(	const ::gpk::view_const_string	& pathImages
-	,	const ::gpk::view_const_string	& extension
+	(	const ::gpk::view_const_char	& pathImages
+	,	const ::gpk::view_const_char	& extension
 	,	const ::ntl::SHTMLIcon			& menuItem
 	,	::gpk::array_pod<char_t>		& output
 	, bool								iconLarge
@@ -125,7 +125,7 @@
 	idBase64.push_back(0);
 	sprintf_s(events, "onmouseout=\"cellColor('%s', null, 0);\" onmouseover=\"cellColor('%s', '#ec8106', 0);\" ", idBase64.begin(), idBase64.begin());
 
-	output.append(::gpk::view_const_string{events});
+	output.append_string(events);
 	output.append_string(" >");
 
 	output.append_string("\n<tr>\n<td>");
@@ -157,8 +157,8 @@
 
 ::gpk::error_t									ntl::htmlControlMenuIconsHorizontal
 	( const ::gpk::view_array<const ::ntl::SHTMLIcon>	& menuItems
-	, const ::gpk::view_const_string					& pathImages
-	, const ::gpk::view_const_string					& extensionImages
+	, const ::gpk::view_const_char						& pathImages
+	, const ::gpk::view_const_char						& extensionImages
 	, ::gpk::array_pod<char_t>							& output
 	, bool												iconsLarge
 	) {
@@ -184,8 +184,8 @@
 
 ::gpk::error_t									ntl::htmlTag
 	( const ::gpk::view_const_string	& tagName
-	, const ::gpk::view_const_string	& content
-	, const ::gpk::view_const_string	& attributes
+	, const ::gpk::view_const_char		& content
+	, const ::gpk::view_const_char		& attributes
 	, ::gpk::array_pod<char_t>			& output
 	) {
 	gpk_necall(output.push_back('<')	, "%s", "Out of memory?");
@@ -206,7 +206,7 @@
 
 ::gpk::error_t									ntl::htmlVoidTag
 	( const ::gpk::view_const_string	& tagName
-	, const ::gpk::view_const_string	& attributes
+	, const ::gpk::view_const_char		& attributes
 	, ::gpk::array_pod<char_t>			& output
 	) {
 	gpk_necall(output.push_back('<')	, "%s", "Out of memory?");
@@ -221,8 +221,8 @@
 	return 0;
 }
 
-static	::gpk::error_t							loadPath						(::gpk::view_const_string rootPart, const ::gpk::view_const_string & expression, ::gpk::SJSONReader & reader, int32_t indexRoot, ::gpk::array_pod<char> & path, ::gpk::view_const_string & output)	{
-	::gpk::view_const_string							pathPart;
+static	::gpk::error_t							loadPath						(::gpk::view_const_char rootPart, const ::gpk::view_const_string & expression, ::gpk::SJSONReader & reader, int32_t indexRoot, ::gpk::array_pod<char> & path, ::gpk::view_const_char & output)	{
+	::gpk::view_const_char							pathPart;
 	path											= rootPart;
 	::gpk::jsonExpressionResolve(expression, reader, indexRoot, pathPart);
 	path.append(pathPart);
@@ -232,11 +232,11 @@ static	::gpk::error_t							loadPath						(::gpk::view_const_string rootPart, co
 
 ::gpk::error_t									ntl::frontConfigLoad					(::ntl::SHTMLEndpoint & programState, int32_t indexRoot)	{
 	if(-1 == indexRoot) {
-		::gpk::view_const_string						rootNode;
+		::gpk::view_const_char							rootNode;
 		indexRoot									= ::gpk::jsonExpressionResolve("neutralizer", programState.Config.Reader, 0, rootNode);
 	}
 	{
-		::gpk::view_const_string							rootPart;
+		::gpk::view_const_char							rootPart;
 		::gpk::jsonExpressionResolve("front.http.path.root", programState.Config.Reader, indexRoot, rootPart);
 
 		::gpk::array_pod<char>								path;
