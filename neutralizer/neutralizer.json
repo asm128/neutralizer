@@ -34,7 +34,48 @@
 			{	"path"			: 
 				{	"session"	: "./session"
 				,	"user"		: "./user"
-				,	"database"	: "./tudb"
+				,	"database"	: "./blitdb"
+			 	}
+		 	}
+		}
+	}
+,	"whynot" : 
+	{	"front"	: 
+		{	"title": "Why Not? - Remeras Opresoras"
+		,	"http" : 
+			{	"path"			: // Paths have to start with a / and will be relative to (appended at the end of) "root" 
+				{	"root"			: "/whynot"		// This is the root path of the applicaiton. It's used as basis for 
+				,	"exe"			: "/m"		// 
+				,	"image"			: "/image"	
+				,	"css"			: "/css"		
+				,	"js"			: "/js"		
+		 		}
+			}
+		,	"extension" : 
+			{	"image"				: "png"
+			,	"program"			: "exe"
+			} 
+		}
+	,	"back"	: 
+		{	"http" : 
+			{	"domain"			: "asm128.com"
+			,	"path"				: "/module/obelisco/asterisco.exe"
+			,	"port"				: "80"
+			}
+		,	"https" : 
+			{	"https_address"		: "asm128.com"
+			,	"https_port"		: "443"
+			,	"path"				: "/module/obelisco/asterisco.exe"
+			}
+		,	"udp" : 
+			{	"udp_lan_address"	: "192.168.0.3"
+			,	"udp_lan_port"		: "9797"
+			}
+		,	"data" : 
+			{	"path"			: 
+				{	"session"	: "./session"
+				,	"user"		: "./user"
+				,	"database"	: "./blitdb"
 			 	}
 		 	}
 		}
