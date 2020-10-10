@@ -3,6 +3,7 @@
 #include "gpk_base64.h"
 
 #include "gpk_json_expression.h"
+#include "gpk_label.h"
 
 ::gpk::error_t										ntl::loadNTLArgs					(SNTLArgs & out_loaded, const ::gpk::view_array<const ::gpk::TKeyValConstString> & queryStringKeyVals)	{
 	::gpk::find(::gpk::vcs{"s"}, queryStringKeyVals, out_loaded.Session);
@@ -226,7 +227,8 @@ static	::gpk::error_t							loadPath						(::gpk::view_const_char rootPart, cons
 	path											= rootPart;
 	::gpk::jsonExpressionResolve(expression, reader, indexRoot, pathPart);
 	path.append(pathPart);
-	output											= ::gpk::view_array(path.begin(), path.size());
+	const ::gpk::label safePath = {path.begin(), path.size()};
+	output											= safePath;
 	return 0;
 }
 
@@ -240,10 +242,10 @@ static	::gpk::error_t							loadPath						(::gpk::view_const_char rootPart, cons
 		::gpk::jsonExpressionResolve(::gpk::vcs{"front.http.path.root"}, programState.Config.Reader, indexRoot, rootPart);
 
 		::gpk::array_pod<char>								path;
-		::loadPath(rootPart, ::gpk::vcs{"front.http.path.image"	}, programState.Config.Reader, indexRoot, path, programState.Path.Image	);
-		::loadPath(rootPart, ::gpk::vcs{"front.http.path.css"	}, programState.Config.Reader, indexRoot, path, programState.Path.Style	);
+		::loadPath(rootPart, ::gpk::vcs{"front.http.path.image"	}, programState.Config.Reader, indexRoot, path, programState.Path.Image		);
+		::loadPath(rootPart, ::gpk::vcs{"front.http.path.css"	}, programState.Config.Reader, indexRoot, path, programState.Path.Style		);
 		::loadPath(rootPart, ::gpk::vcs{"front.http.path.js"	}, programState.Config.Reader, indexRoot, path, programState.Path.Script	);
-		::loadPath(rootPart, ::gpk::vcs{"front.http.path.exe"	}, programState.Config.Reader, indexRoot, path, programState.Path.Program);
+		::loadPath(rootPart, ::gpk::vcs{"front.http.path.exe"	}, programState.Config.Reader, indexRoot, path, programState.Path.Program	);
 	}
 	::gpk::jsonExpressionResolve(::gpk::vcs{"front.title"				}, programState.Config.Reader, indexRoot, programState.Page.Title		);
 	::gpk::jsonExpressionResolve(::gpk::vcs{"front.extension.image"		}, programState.Config.Reader, indexRoot, programState.Extension.Image	);
