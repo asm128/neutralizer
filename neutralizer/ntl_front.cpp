@@ -5,11 +5,11 @@
 #include "gpk_json_expression.h"
 
 ::gpk::error_t										ntl::loadNTLArgs					(SNTLArgs & out_loaded, const ::gpk::view_array<const ::gpk::TKeyValConstString> & queryStringKeyVals)	{
-	::gpk::find("s", queryStringKeyVals, out_loaded.Session);
-	::gpk::find("l", queryStringKeyVals, out_loaded.Language);
-	::gpk::find("m", queryStringKeyVals, out_loaded.Module);
-	::gpk::find("w", queryStringKeyVals, out_loaded.Width);
-	::gpk::find("h", queryStringKeyVals, out_loaded.Height);
+	::gpk::find(::gpk::vcs{"s"}, queryStringKeyVals, out_loaded.Session);
+	::gpk::find(::gpk::vcs{"l"}, queryStringKeyVals, out_loaded.Language);
+	::gpk::find(::gpk::vcs{"m"}, queryStringKeyVals, out_loaded.Module);
+	::gpk::find(::gpk::vcs{"w"}, queryStringKeyVals, out_loaded.Width);
+	::gpk::find(::gpk::vcs{"h"}, queryStringKeyVals, out_loaded.Height);
 	return 0;
 }
 
@@ -226,27 +226,27 @@ static	::gpk::error_t							loadPath						(::gpk::view_const_char rootPart, cons
 	path											= rootPart;
 	::gpk::jsonExpressionResolve(expression, reader, indexRoot, pathPart);
 	path.append(pathPart);
-	output											= ::gpk::label(path.begin(), path.size());
+	output											= ::gpk::view_array(path.begin(), path.size());
 	return 0;
 }
 
 ::gpk::error_t									ntl::frontConfigLoad					(::ntl::SHTMLEndpoint & programState, int32_t indexRoot)	{
 	if(-1 == indexRoot) {
 		::gpk::view_const_char							rootNode;
-		indexRoot									= ::gpk::jsonExpressionResolve("neutralizer", programState.Config.Reader, 0, rootNode);
+		indexRoot									= ::gpk::jsonExpressionResolve(::gpk::vcs{"neutralizer"}, programState.Config.Reader, 0, rootNode);
 	}
 	{
 		::gpk::view_const_char							rootPart;
-		::gpk::jsonExpressionResolve("front.http.path.root", programState.Config.Reader, indexRoot, rootPart);
+		::gpk::jsonExpressionResolve(::gpk::vcs{"front.http.path.root"}, programState.Config.Reader, indexRoot, rootPart);
 
 		::gpk::array_pod<char>								path;
-		::loadPath(rootPart, "front.http.path.image"	, programState.Config.Reader, indexRoot, path, programState.Path.Image	);
-		::loadPath(rootPart, "front.http.path.css"		, programState.Config.Reader, indexRoot, path, programState.Path.Style	);
-		::loadPath(rootPart, "front.http.path.js"		, programState.Config.Reader, indexRoot, path, programState.Path.Script	);
-		::loadPath(rootPart, "front.http.path.exe"		, programState.Config.Reader, indexRoot, path, programState.Path.Program);
+		::loadPath(rootPart, ::gpk::vcs{"front.http.path.image"	}, programState.Config.Reader, indexRoot, path, programState.Path.Image	);
+		::loadPath(rootPart, ::gpk::vcs{"front.http.path.css"	}, programState.Config.Reader, indexRoot, path, programState.Path.Style	);
+		::loadPath(rootPart, ::gpk::vcs{"front.http.path.js"	}, programState.Config.Reader, indexRoot, path, programState.Path.Script	);
+		::loadPath(rootPart, ::gpk::vcs{"front.http.path.exe"	}, programState.Config.Reader, indexRoot, path, programState.Path.Program);
 	}
-	::gpk::jsonExpressionResolve("front.title"				, programState.Config.Reader, indexRoot, programState.Page.Title		);
-	::gpk::jsonExpressionResolve("front.extension.image"	, programState.Config.Reader, indexRoot, programState.Extension.Image	);
-	::gpk::jsonExpressionResolve("front.extension.program"	, programState.Config.Reader, indexRoot, programState.Extension.Program	);
+	::gpk::jsonExpressionResolve(::gpk::vcs{"front.title"				}, programState.Config.Reader, indexRoot, programState.Page.Title		);
+	::gpk::jsonExpressionResolve(::gpk::vcs{"front.extension.image"		}, programState.Config.Reader, indexRoot, programState.Extension.Image	);
+	::gpk::jsonExpressionResolve(::gpk::vcs{"front.extension.program"	}, programState.Config.Reader, indexRoot, programState.Extension.Program	);
 	return 0;
 }

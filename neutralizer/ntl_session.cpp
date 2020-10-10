@@ -11,11 +11,11 @@
 	gpk_necall(cookieValues.resize(cookiePairs.size()), "%s", "Out of memory?");
 	for(uint32_t iPair = 0; iPair < cookiePairs.size(); ++iPair) {
 		::gpk::view_const_char								& pair					= cookiePairs[iPair];
-		::gpk::trim(pair);
+		::gpk::trim(pair, pair);
 		::gpk::keyval_split(pair, cookieValues[iPair]);
 	}
 	::gpk::view_const_string								sessionFileName;
-	gpk_necall(::gpk::find("tumama", cookieValues, sessionFileName), "%s", "Invalid cookie. 'tumama' not found.");
-	ree_if(-1 == ::gpk::fileToMemory(sessionFileName, sessionFileContents), "Invalid session name: '%s'. Already exists!", sessionFileName.begin());
+	gpk_necall(::gpk::find(::gpk::vcs{"tumama"}, cookieValues, sessionFileName), "%s", "Invalid cookie. 'tumama' not found.");
+	gpk_necall(::gpk::fileToMemory(sessionFileName, sessionFileContents), "Invalid session name: '%s'. Already exists!", sessionFileName.begin());
 	return 0;
 }
