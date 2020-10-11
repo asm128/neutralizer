@@ -14,7 +14,7 @@
 	return 0;
 }
 
-::gpk::error_t										ntl::httpPath						(::gpk::view_const_char folder, ::gpk::view_const_string name, ::gpk::view_const_char extension, ::gpk::array_pod<char_t> & output) {
+::gpk::error_t										ntl::httpPath						(::gpk::view_const_string folder, ::gpk::view_const_string name, ::gpk::view_const_string extension, ::gpk::array_pod<char_t> & output) {
 	output.append(folder);
 	output.push_back('/');
 	output.append(name);

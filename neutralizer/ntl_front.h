@@ -124,7 +124,7 @@ namespace ntl
 		return ::ntl::htmlTag("a", content, {src.begin(), src.size()}, output);
 	}
 
-	::gpk::error_t								httpPath			(::gpk::view_const_char folder, ::gpk::view_const_string name, ::gpk::view_const_char extension, ::gpk::array_pod<char_t> & output);
+	::gpk::error_t								httpPath			(::gpk::view_const_string folder, ::gpk::view_const_string name, ::gpk::view_const_string extension, ::gpk::array_pod<char_t> & output);
 
 	::gpk::error_t								frontConfigLoad		(::ntl::SHTMLEndpoint & programState, int32_t indexRoot);
 } // namespace
