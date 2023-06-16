@@ -7,124 +7,124 @@
 namespace ntl
 {
 	struct SNTLArgs {
-		::gpk::view_const_char						Language;
-		::gpk::view_const_char						Module;
-		::gpk::view_const_char						Session;
-		::gpk::view_const_char						Username;
-		::gpk::view_const_char						Width;
-		::gpk::view_const_char						Height;
+		::gpk::vcc						Language;
+		::gpk::vcc						Module;
+		::gpk::vcc						Session;
+		::gpk::vcc						Username;
+		::gpk::vcc						Width;
+		::gpk::vcc						Height;
 	};
 
-	::gpk::error_t								loadNTLArgs					(SNTLArgs & out_loaded, const ::gpk::view_array<const ::gpk::TKeyValConstString> & queryStringKeyVals);
+	::gpk::error_t					loadNTLArgs					(SNTLArgs & out_loaded, const ::gpk::view_array<const ::gpk::TKeyValConstString> & queryStringKeyVals);
 
 	struct SHTMLSiteExtension {
-		::gpk::view_const_char						Program						= {};
-		::gpk::view_const_char						Image						= {};
+		::gpk::vcc						Program						= {};
+		::gpk::vcc						Image						= {};
 	};
 
 	struct SHTMLSitePath {
-		::gpk::view_const_char						Program						= {};
-		::gpk::view_const_char						Image						= {};
-		::gpk::view_const_char						Script						= {};
-		::gpk::view_const_char						Style						= {};
+		::gpk::vcc						Program						= {};
+		::gpk::vcc						Image						= {};
+		::gpk::vcc						Script						= {};
+		::gpk::vcc						Style						= {};
 	};
 
 	struct SHTMLPage {
-		::gpk::view_const_char						Title						= {};
-		::gpk::array_obj<::gpk::view_const_char>	Scripts						= {};
-		::gpk::array_obj<::gpk::view_const_char>	Styles						= {};
+		::gpk::vcc						Title						= {};
+		::gpk::array_obj<::gpk::vcc>	Scripts						= {};
+		::gpk::array_obj<::gpk::vcc>	Styles						= {};
 	};
 
 	struct SHTMLEndpoint {
-		::gpk::SJSONFile							Config						= {};
-		::ntl::SHTMLPage							Page						= {};
-		::ntl::SHTMLSitePath						Path						= {};
-		::ntl::SHTMLSiteExtension					Extension					= {};
+		::gpk::SJSONFile				Config						= {};
+		::ntl::SHTMLPage				Page						= {};
+		::ntl::SHTMLSitePath			Path						= {};
+		::ntl::SHTMLSiteExtension		Extension					= {};
 	};
 
 	struct SHTMLIcon {
-		::gpk::view_const_char						Item	;
-		::gpk::view_const_char						Program	;
-		::gpk::view_const_char						Text	;
+		::gpk::vcc						Item	;
+		::gpk::vcc						Program	;
+		::gpk::vcc						Text	;
 	};
 
-	::gpk::error_t								htmlTag
+	::gpk::error_t					htmlTag
 		( const ::gpk::view_const_string	& tagName
-		, const ::gpk::view_const_char		& content
-		, const ::gpk::view_const_char		& attributes
-		, ::gpk::array_pod<char_t>			& output
+		, const ::gpk::vcc		& content
+		, const ::gpk::vcc		& attributes
+		, ::gpk::apod<char>			& output
 		);
 
-	::gpk::error_t								htmlVoidTag
+	::gpk::error_t					htmlVoidTag
 		( const ::gpk::view_const_string	& tagName
-		, const ::gpk::view_const_char		& attributes
-		, ::gpk::array_pod<char_t>			& output
+		, const ::gpk::vcc					& attributes
+		, ::gpk::apod<char>			& output
 		);
 
-	::gpk::error_t								htmlMenuIcon
-		( const ::gpk::view_const_char		& pathImages
-		, const ::gpk::view_const_char		& extension
-		, const ::gpk::view_const_char		& itemName
-		, const ::gpk::view_const_char		& txtIcon
-		, ::gpk::array_pod<char_t>			& output
+	::gpk::error_t					htmlMenuIcon
+		( const ::gpk::vcc		& pathImages
+		, const ::gpk::vcc		& extension
+		, const ::gpk::vcc		& itemName
+		, const ::gpk::vcc		& txtIcon
+		, ::gpk::apod<char>			& output
 		, bool								iconsLarge					= true
 		);
 
-	::gpk::error_t								htmlMenuIconsHorizontal
+	::gpk::error_t					htmlMenuIconsHorizontal
 		( const ::gpk::view_array<const ::ntl::SHTMLIcon>	& menuItems
-		, const ::gpk::view_const_char						& pathImages
-		, const ::gpk::view_const_char						& extensionImages
-		, ::gpk::array_pod<char_t>							& output
+		, const ::gpk::vcc						& pathImages
+		, const ::gpk::vcc						& extensionImages
+		, ::gpk::apod<char>							& output
 		, bool								iconsLarge					= true
 		);
 
 	::gpk::error_t								htmlControlMenuIcon
-		( const ::gpk::view_const_char		& pathImages
-		, const ::gpk::view_const_char		& extension
+		( const ::gpk::vcc		& pathImages
+		, const ::gpk::vcc		& extension
 		,	const ::ntl::SHTMLIcon			& menuItem
-		, ::gpk::array_pod<char_t>			& output
+		, ::gpk::apod<char>			& output
 		, bool								iconsLarge					= true
 		);
 
 	::gpk::error_t								htmlControlMenuIconsHorizontal
 		( const ::gpk::view_array<const ::ntl::SHTMLIcon>	& menuItems
-		, const ::gpk::view_const_char						& pathImages
-		, const ::gpk::view_const_char						& extensionImages
-		, ::gpk::array_pod<char_t>							& output
+		, const ::gpk::vcc						& pathImages
+		, const ::gpk::vcc						& extensionImages
+		, ::gpk::apod<char>							& output
 		, bool								iconsLarge					= true
 		);
 
 
-	static inline ::gpk::error_t				htmlHeaderTitle		(const ::gpk::view_const_char	& content	, ::gpk::array_pod<char_t> & output)	{ return ::ntl::htmlTag("title", content, {}, output); }
-	static inline ::gpk::error_t				htmlHeaderScript	(const ::gpk::view_const_char	& content	, ::gpk::array_pod<char_t> & output)	{ return ::ntl::htmlTag("script", content, {}, output); }
-	static inline ::gpk::error_t				htmlHeaderStyle		(const ::gpk::view_const_char	& content	, ::gpk::array_pod<char_t> & output)	{ return ::ntl::htmlTag("style", content, " type=\"text/css\" ", output); }
-	static inline ::gpk::error_t				htmlHeaderScriptFile(const ::gpk::view_const_char	& file		, ::gpk::array_pod<char_t> & output)	{
-		::gpk::array_pod<char_t>						src					= ::gpk::view_const_string{"type=\"text/javascript\" src=\""};
+	static inline ::gpk::error_t	htmlHeaderTitle		(const ::gpk::vcc	& content	, ::gpk::apod<char> & output)	{ return ::ntl::htmlTag("title", content, {}, output); }
+	static inline ::gpk::error_t	htmlHeaderScript	(const ::gpk::vcc	& content	, ::gpk::apod<char> & output)	{ return ::ntl::htmlTag("script", content, {}, output); }
+	static inline ::gpk::error_t	htmlHeaderStyle		(const ::gpk::vcc	& content	, ::gpk::apod<char> & output)	{ return ::ntl::htmlTag("style", content, " type=\"text/css\" ", output); }
+	static inline ::gpk::error_t	htmlHeaderScriptFile(const ::gpk::vcc	& file		, ::gpk::apod<char> & output)	{
+		::gpk::apod<char>					src					= ::gpk::vcs{"type=\"text/javascript\" src=\""};
 		src.append(file);
 		src.push_back('"');
 		return ::ntl::htmlTag("script", {}, {src.begin(), src.size()}, output);
 	}
 
-	static inline ::gpk::error_t				htmlHeaderStyleLink	(const ::gpk::view_const_char	& file		, ::gpk::array_pod<char_t> & output)	{
-		::gpk::array_pod<char_t>						src					= ::gpk::view_const_string{" rel=\"stylesheet\" type=\"text/css\" href=\""};
+	static inline ::gpk::error_t	htmlHeaderStyleLink	(const ::gpk::vcc	& file		, ::gpk::apod<char> & output)	{
+		::gpk::apod<char>					src					= ::gpk::vcs{" rel=\"stylesheet\" type=\"text/css\" href=\""};
 		src.append(file);
 		src.push_back('"');
 		return ::ntl::htmlVoidTag("link", {src.begin(), src.size()}, output);
 	}
 
-	static inline ::gpk::error_t				htmlHRefLink		(const ::gpk::view_const_char	& content
-		, const ::gpk::view_const_char	& url
-		, const ::gpk::view_const_char	& attributes
-		, ::gpk::array_pod<char_t>			& output
+	static inline ::gpk::error_t				htmlHRefLink		(const ::gpk::vcc	& content
+		, const ::gpk::vcc	& url
+		, const ::gpk::vcc	& attributes
+		, ::gpk::apod<char>			& output
 		) {
-		::gpk::array_pod<char_t>						src					= attributes;
+		::gpk::apod<char>						src					= attributes;
 		src.append(::gpk::view_const_string{" href=\""});
 		src.append(url);
 		src.push_back('"');
 		return ::ntl::htmlTag("a", content, {src.begin(), src.size()}, output);
 	}
 
-	::gpk::error_t								httpPath			(::gpk::view_const_string folder, ::gpk::view_const_string name, ::gpk::view_const_string extension, ::gpk::array_pod<char_t> & output);
+	::gpk::error_t								httpPath			(::gpk::view_const_string folder, ::gpk::view_const_string name, ::gpk::view_const_string extension, ::gpk::apod<char> & output);
 
 	::gpk::error_t								frontConfigLoad		(::ntl::SHTMLEndpoint & programState, int32_t indexRoot);
 } // namespace

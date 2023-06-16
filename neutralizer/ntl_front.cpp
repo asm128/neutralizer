@@ -5,7 +5,7 @@
 #include "gpk_json_expression.h"
 #include "gpk_label.h"
 
-::gpk::error_t										ntl::loadNTLArgs					(SNTLArgs & out_loaded, const ::gpk::view_array<const ::gpk::TKeyValConstString> & queryStringKeyVals)	{
+::gpk::error_t			ntl::loadNTLArgs					(SNTLArgs & out_loaded, const ::gpk::view_array<const ::gpk::TKeyValConstString> & queryStringKeyVals)	{
 	::gpk::find(::gpk::vcs{"s"}, queryStringKeyVals, out_loaded.Session);
 	::gpk::find(::gpk::vcs{"l"}, queryStringKeyVals, out_loaded.Language);
 	::gpk::find(::gpk::vcs{"m"}, queryStringKeyVals, out_loaded.Module);
@@ -14,7 +14,7 @@
 	return 0;
 }
 
-::gpk::error_t										ntl::httpPath						(::gpk::view_const_string folder, ::gpk::view_const_string name, ::gpk::view_const_string extension, ::gpk::array_pod<char_t> & output) {
+::gpk::error_t			ntl::httpPath						(::gpk::vcs folder, ::gpk::vcs name, ::gpk::vcs extension, ::gpk::apod<char> & output) {
 	output.append(folder);
 	output.push_back('/');
 	output.append(name);
@@ -23,21 +23,21 @@
 	return 0;
 }
 
-::gpk::error_t										ntl::htmlMenuIcon
-	(	const ::gpk::view_const_char	& pathImages
-	,	const ::gpk::view_const_char	& extension
-	,	const ::gpk::view_const_char	& itemName
-	,	const ::gpk::view_const_char	& txtIcon
-	,	::gpk::array_pod<char_t>		& output
-	, bool								iconLarge
+::gpk::error_t			ntl::htmlMenuIcon
+	(	const ::gpk::vcc	& pathImages
+	,	const ::gpk::vcc	& extension
+	,	const ::gpk::vcc	& itemName
+	,	const ::gpk::vcc	& txtIcon
+	,	::gpk::apod<char>	& output
+	, bool					iconLarge
 	) {
-	char													events		[4096]					= {};
-	::gpk::array_pod<char_t>								iconId								= {};
-	::gpk::array_pod<char_t>								idBase64							= {};
+	char						events		[4096]	= {};
+	::gpk::apod<char>			iconId				= {};
+	::gpk::apod<char>			idBase64			= {};
 	{ // Generate id for this icon
-		iconId												= ::gpk::view_const_string{"id_icon_"};
+		iconId					= ::gpk::vcs{"id_icon_"};
 		iconId.append(txtIcon);
-		::gpk::base64EncodeFS(iconId, idBase64);
+		::gpk::base64EncodeFS(::gpk::vcc{iconId}, idBase64);
 	}
 	output.append_string("<table style=\"width: 100%; height: 100%;text-align:center;\" ");
 	output.append_string(" id=\"");
@@ -45,7 +45,7 @@
 	output.append_string("\" ");
 	idBase64.push_back(0);
 	sprintf_s(events, "onmouseout=\"cellColor('%s', null, 0);\" onmouseover=\"cellColor('%s', '#ec8106', 0);\" ", idBase64.begin(), idBase64.begin());
-	output.append(::gpk::view_const_string{events});
+	output.append(::gpk::vcs{events});
 	output.append_string(" >");
 
 	output.append_string("<tr><td>");
@@ -74,9 +74,9 @@
 
 ::gpk::error_t									ntl::htmlMenuIconsHorizontal
 	( const ::gpk::view_array<const ::ntl::SHTMLIcon>	& menuItems
-	, const ::gpk::view_const_char						& pathImages
-	, const ::gpk::view_const_char						& extensionImages
-	, ::gpk::array_pod<char_t>							& output
+	, const ::gpk::vcc						& pathImages
+	, const ::gpk::vcc						& extensionImages
+	, ::gpk::apod<char>							& output
 	, bool												iconsLarge
 	) {
 	output.append_string("<table style=\"width:100%;height:100%;\" >");	// 181830
@@ -87,7 +87,7 @@
 	for(uint32_t iItem = 0; iItem < menuItems.size(); ++iItem) {
 		const ::ntl::SHTMLIcon									currentItem				= menuItems[iItem];
 		output.append_string("<td style=\"height:100%;width:");
-		output.append(::gpk::view_const_string{iconWidth});
+		output.append(::gpk::vcs{iconWidth});
 		output.append_string("\" >");
 
 		::ntl::htmlMenuIcon(pathImages, extensionImages, currentItem.Item, currentItem.Text, output, iconsLarge);	// ------ Unknown icon
@@ -100,17 +100,17 @@
 
 
 ::gpk::error_t										ntl::htmlControlMenuIcon
-	(	const ::gpk::view_const_char	& pathImages
-	,	const ::gpk::view_const_char	& extension
+	(	const ::gpk::vcc	& pathImages
+	,	const ::gpk::vcc	& extension
 	,	const ::ntl::SHTMLIcon			& menuItem
-	,	::gpk::array_pod<char_t>		& output
+	,	::gpk::apod<char>		& output
 	, bool								iconLarge
 	) {
 	char													events		[4096]		= {};
-	::gpk::array_pod<char_t>								iconId					= {};
-	::gpk::array_pod<char_t>								idBase64				= {};
+	::gpk::apod<char>								iconId					= {};
+	::gpk::apod<char>								idBase64				= {};
 	{ // Generate id for this icon
-		iconId											= ::gpk::view_const_string{ "id_icon_"};
+		iconId											= ::gpk::vcs{ "id_icon_"};
 		iconId.append(menuItem.Text);
 		::gpk::base64EncodeFS(iconId, idBase64);
 	}
@@ -158,9 +158,9 @@
 
 ::gpk::error_t									ntl::htmlControlMenuIconsHorizontal
 	( const ::gpk::view_array<const ::ntl::SHTMLIcon>	& menuItems
-	, const ::gpk::view_const_char						& pathImages
-	, const ::gpk::view_const_char						& extensionImages
-	, ::gpk::array_pod<char_t>							& output
+	, const ::gpk::vcc						& pathImages
+	, const ::gpk::vcc						& extensionImages
+	, ::gpk::apod<char>							& output
 	, bool												iconsLarge
 	) {
 	output.append_string("\n<table style=\"width:100%;height:100%;\" >");	// 181830
@@ -171,7 +171,7 @@
 	for(uint32_t iItem = 0; iItem < menuItems.size(); ++iItem) {
 		const ::ntl::SHTMLIcon									currentItem				= menuItems[iItem];
 		output.append_string("\n<td style=\"height:100%;width:");
-		output.append(::gpk::view_const_string{iconWidth});
+		output.append(::gpk::vcs{iconWidth});
 		output.append_string("\" >");
 
 		::ntl::htmlControlMenuIcon(pathImages, extensionImages, currentItem, output, iconsLarge);	// ------ Unknown icon
@@ -184,10 +184,10 @@
 
 
 ::gpk::error_t									ntl::htmlTag
-	( const ::gpk::view_const_string	& tagName
-	, const ::gpk::view_const_char		& content
-	, const ::gpk::view_const_char		& attributes
-	, ::gpk::array_pod<char_t>			& output
+	( const ::gpk::vcs	& tagName
+	, const ::gpk::vcc		& content
+	, const ::gpk::vcc		& attributes
+	, ::gpk::apod<char>			& output
 	) {
 	gpk_necall(output.push_back('<')	, "%s", "Out of memory?");
 	gpk_necall(output.append(tagName)	, "%s", "Out of memory?");
@@ -206,9 +206,9 @@
 }
 
 ::gpk::error_t									ntl::htmlVoidTag
-	( const ::gpk::view_const_string	& tagName
-	, const ::gpk::view_const_char		& attributes
-	, ::gpk::array_pod<char_t>			& output
+	( const ::gpk::vcs	& tagName
+	, const ::gpk::vcc		& attributes
+	, ::gpk::apod<char>			& output
 	) {
 	gpk_necall(output.push_back('<')	, "%s", "Out of memory?");
 	gpk_necall(output.append(tagName)	, "%s", "Out of memory?");
@@ -222,8 +222,8 @@
 	return 0;
 }
 
-static	::gpk::error_t							loadPath						(::gpk::view_const_char rootPart, const ::gpk::view_const_string & expression, ::gpk::SJSONReader & reader, int32_t indexRoot, ::gpk::array_pod<char> & path, ::gpk::view_const_char & output)	{
-	::gpk::view_const_char							pathPart;
+static	::gpk::error_t							loadPath						(::gpk::vcc rootPart, const ::gpk::vcs & expression, ::gpk::SJSONReader & reader, int32_t indexRoot, ::gpk::array_pod<char> & path, ::gpk::vcc & output)	{
+	::gpk::vcc							pathPart;
 	path											= rootPart;
 	::gpk::jsonExpressionResolve(expression, reader, indexRoot, pathPart);
 	path.append(pathPart);
@@ -234,11 +234,11 @@ static	::gpk::error_t							loadPath						(::gpk::view_const_char rootPart, cons
 
 ::gpk::error_t									ntl::frontConfigLoad					(::ntl::SHTMLEndpoint & programState, int32_t indexRoot)	{
 	if(-1 == indexRoot) {
-		::gpk::view_const_char							rootNode;
+		::gpk::vcc							rootNode;
 		indexRoot									= ::gpk::jsonExpressionResolve(::gpk::vcs{"neutralizer"}, programState.Config.Reader, 0, rootNode);
 	}
 	{
-		::gpk::view_const_char							rootPart;
+		::gpk::vcc							rootPart;
 		::gpk::jsonExpressionResolve(::gpk::vcs{"front.http.path.root"}, programState.Config.Reader, indexRoot, rootPart);
 
 		::gpk::array_pod<char>								path;
